@@ -15,8 +15,6 @@ using Color = Godot.Color;
 using Rect = Godot.Rect2;
 using Bounds = Godot.Aabb;
 
-using Ndot;
-
 namespace Freya {
 
 	/// <summary>Various extensions for floats, vectors and colors</summary>

@@ -20,8 +20,6 @@ using Color = Godot.Color;
 using Rect = Godot.Rect2;
 using Bounds = Godot.Aabb;
 
-using Ndot;
-
 namespace Freya {
 
 	/// <summary>The core math helper class. It has functions mostly for single values, but also vector helpers</summary>
@@ -927,7 +925,7 @@ namespace Freya {
 		/// <param name="smoothTime">Approximately the time it will take to reach the target. A smaller value will reach the target faster</param>
 		/// <param name="maxSpeed">	Optionally allows you to clamp the maximum speed</param>
 		public static float SmoothDamp( float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed = Infinity ) {
-			float deltaTime = Time.deltaTime;
+			float deltaTime = CoreUtil.DeltaTime;
 			return SmoothDamp( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
 		}
 
@@ -1269,13 +1267,13 @@ namespace Freya {
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
 		[MethodImpl( INLINE )] public static Quaternion GetArcOrientation( Vector3 velocity, Vector3 acceleration ) {
 			Vector3 binormal = velocity.Cross( acceleration );
-			return NMath.LookRotation( velocity, binormal );
+			return CoreUtil.LookRotation( velocity, binormal );
 		}
 
 		/// <inheritdoc cref="GetArcOrientation(Vector3,Vector3)"/>
 		[MethodImpl( INLINE )] public static Quaternion GetArcOrientation( Vector2 velocity, Vector2 acceleration ) {
 			Vector3 binormal = new Vector3( 0, 0, Sign( Determinant( velocity, acceleration ) ) );
-			return NMath.LookRotation( velocity.ToVector3(), binormal );
+			return CoreUtil.LookRotation( velocity.ToVector3(), binormal );
 		}
 
 		/// <summary>Returns the frenet-serret (curvature-based) orientation of a point in a curve with the given velocity and acceleration values, where the X direction is tangent to the curve.
@@ -1284,13 +1282,13 @@ namespace Freya {
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
 		[MethodImpl( INLINE )] public static Quaternion GetFrenetSerretOrientation( Vector3 velocity, Vector3 acceleration ) {
 			GetCurvatureOrientationAxes( velocity, acceleration, out _, out Vector3 N, out Vector3 B );
-			return NMath.LookRotation( B, N );
+			return CoreUtil.LookRotation( B, N );
 		}
 
 		/// <inheritdoc cref="GetFrenetSerretOrientation(Vector3,Vector3)"/>
 		[MethodImpl( INLINE )] public static Quaternion GetFrenetSerretOrientation( Vector2 velocity, Vector2 acceleration ) {
 			GetCurvatureOrientationAxes( velocity, acceleration, out _, out Vector3 N, out Vector3 B );
-			return NMath.LookRotation( B, N );
+			return CoreUtil.LookRotation( B, N );
 		}
 
 		/// <summary>Returns the frenet-serret (curvature-based) orientation axes of a point in a curve with the given velocity and acceleration values</summary>
@@ -1320,7 +1318,7 @@ namespace Freya {
 			int sign = Determinant( forward, up ) >= 0 ? 1 : -1;
 			Vector2 Y = new(-sign * forward.Y, sign * forward.X);
 			Vector3 Z = new(0, 0, sign);
-			return NMath.LookRotation( Z, Y.ToVector3() );
+			return CoreUtil.LookRotation( Z, Y.ToVector3() );
 		}
 
 		/// <inheritdoc cref="GetLookRotation2D(Vector2,Vector2)"/>
@@ -1420,7 +1418,7 @@ namespace Freya {
 		/// <param name="smoothTime">Approximately the time it will take to reach the target. A smaller value will reach the target faster</param>
 		/// <param name="maxSpeed">Optionally allows you to clamp the maximum speed</param>
 		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed = Infinity ) {
-			float deltaTime = Time.deltaTime;
+			float deltaTime = CoreUtil.DeltaTime;
 			return SmoothDampAngle( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
 		}
 

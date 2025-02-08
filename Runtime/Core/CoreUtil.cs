@@ -5,6 +5,9 @@ using Godot;
 
 namespace Freya {
     public static class CoreUtil {
+        // Time
+        public static float DeltaTime => 4; // todo;
+
         // LerpUnclamped
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float LerpUnclamped(float a, float b, float t) {
@@ -49,8 +52,72 @@ namespace Freya {
         }
 
 
-        // Orthonormalization
+        // LookRotation
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Quaternion LookRotation(Vector3 forward) {
+            return LookRotation(forward, Vector3.Up);
+        }
 
+        // From: http://answers.unity3d.com/questions/467614/what-is-the-source-code-of-quaternionlookrotation.html
+        public static Quaternion LookRotation(Vector3 forward, Vector3 up) {
+            forward = forward.Normalized();
+            Vector3 right = up.Cross(forward).Normalized();
+            up = forward.Cross(right);
+            
+            float m00 = right.X;
+            float m01 = right.Y;
+            float m02 = right.Z;
+            float m10 = up.X;
+            float m11 = up.Y;
+            float m12 = up.Z;
+            float m20 = forward.X;
+            float m21 = forward.Y;
+            float m22 = forward.Z;
+
+            float num8 = (m00 + m11) + m22;
+            Quaternion quaternion = new Quaternion();
+
+            if (num8 > 0f) {
+                float num = (float)Math.Sqrt(num8 + 1f);
+                quaternion.W = num * 0.5f;
+                num = 0.5f / num;
+                quaternion.X = (m12 - m21) * num;
+                quaternion.Y = (m20 - m02) * num;
+                quaternion.Z = (m01 - m10) * num;
+                return quaternion;
+            }
+
+            if ((m00 >= m11) && (m00 >= m22)) {
+                float num7 = (float)Math.Sqrt(((1f + m00) - m11) - m22);
+                float num4 = 0.5f / num7;
+                quaternion.X = 0.5f * num7;
+                quaternion.Y = (m01 + m10) * num4;
+                quaternion.Z = (m02 + m20) * num4;
+                quaternion.W = (m12 - m21) * num4;
+                return quaternion;
+            }
+
+            if (m11 > m22) {
+                float num6 = (float)Math.Sqrt(((1f + m11) - m00) - m22);
+                float num3 = 0.5f / num6;
+                quaternion.X = (m10 + m01) * num3;
+                quaternion.Y = 0.5f * num6;
+                quaternion.Z = (m21 + m12) * num3;
+                quaternion.W = (m20 - m02) * num3;
+                return quaternion;
+            }
+
+            float num5 = (float)Math.Sqrt(((1f + m22) - m00) - m11);
+            float num2 = 0.5f / num5;
+            quaternion.X = (m20 + m02) * num2;
+            quaternion.Y = (m21 + m12) * num2;
+            quaternion.Z = 0.5f * num5;
+            quaternion.W = (m01 - m10) * num2;
+            return quaternion;
+        }
+
+
+        // Orthonormalization
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 Orthonormalize(Vector3 tangent, Vector3 normal) {
             return (tangent - tangent.Dot(normal) * normal).Normalized();

@@ -8,8 +8,6 @@ using Vector3 = Godot.Vector3;
 using Vector4 = Godot.Vector4;
 using Quaternion = Godot.Quaternion;
 
-using Ndot;
-
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -173,13 +171,13 @@ namespace Freya {
 		/// The Y axis will attempt to align with the supplied up vector</summary>
 		/// <param name="t">The t-value along the curve to sample</param>
 		/// <param name="up">The reference up vector. The Y axis will attempt to be as aligned with this vector as much as possible</param>
-		[MethodImpl( INLINE )] public static Quaternion EvalOrientation<T>( this T curve, float t, Vector3 up ) where T : IParamCurve1Diff<Vector3> => NMath.LookRotation( curve.EvalDerivative( t ), up );
+		[MethodImpl( INLINE )] public static Quaternion EvalOrientation<T>( this T curve, float t, Vector3 up ) where T : IParamCurve1Diff<Vector3> => CoreUtil.LookRotation( curve.EvalDerivative( t ), up );
 
 		/// <summary>Returns the position and orientation of curve at the given point t, where the Z direction is tangent to the curve.
 		/// The Y axis will attempt to align with the supplied up vector</summary>
 		/// <param name="t">The t-value along the curve to sample</param>
 		/// <param name="up">The reference up vector. The Y axis will attempt to be as aligned with this vector as much as possible</param>
-		[MethodImpl( INLINE )] public static Pose EvalPose<T>( this T curve, float t, Vector3 up ) where T : IParamCurve1Diff<Vector3> => new Pose( curve.Eval( t ), NMath.LookRotation( curve.EvalDerivative( t ), up ) );
+		[MethodImpl( INLINE )] public static Pose EvalPose<T>( this T curve, float t, Vector3 up ) where T : IParamCurve1Diff<Vector3> => new Pose( curve.Eval( t ), CoreUtil.LookRotation( curve.EvalDerivative( t ), up ) );
 
 		/// <summary>Returns the position and orientation of curve at the given point t, expressed as a matrix, where the Z direction is tangent to the curve.
 		/// The Y axis will attempt to align with the supplied up vector</summary>
@@ -243,7 +241,7 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static Pose EvalArcPose<T>( this T curve, float t ) where T : IParamCurve2Diff<Vector3> {
 			( Vector3 pt, Vector3 vel, Vector3 acc ) = ( curve.Eval( t ), curve.EvalDerivative( t ), curve.EvalSecondDerivative( t ) );
 			Vector3 binormal = vel.Cross( acc );
-			return new Pose( pt, NMath.LookRotation( vel, binormal ) );
+			return new Pose( pt, CoreUtil.LookRotation( vel, binormal ) );
 		}
 
 		/// <summary>Returns the position and the frenet-serret (curvature-based) orientation of curve at the given point t, expressed as a matrix, where the Z direction is tangent to the curve.
