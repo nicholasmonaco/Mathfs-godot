@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -12,7 +13,7 @@ namespace Freya {
 
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-		[SerializeField] Vector4Matrix3x1 pointMatrix;
+		[Export] Vector4Matrix3x1 pointMatrix;
 		[NonSerialized] Polynomial4D curve;
 		[NonSerialized] bool validCoefficients;
 
@@ -62,28 +63,28 @@ namespace Freya {
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static BezierQuad4D Lerp( BezierQuad4D a, BezierQuad4D b, float t ) =>
 			new(
-				Vector4.LerpUnclamped( a.P0, b.P0, t ),
-				Vector4.LerpUnclamped( a.P1, b.P1, t ),
-				Vector4.LerpUnclamped( a.P2, b.P2, t )
+				CoreUtil.LerpUnclamped( a.P0, b.P0, t ),
+				CoreUtil.LerpUnclamped( a.P1, b.P1, t ),
+				CoreUtil.LerpUnclamped( a.P2, b.P2, t )
 			);
 		/// <summary>Splits this curve at the given t-value, into two curves that together form the exact same shape</summary>
 		/// <param name="t">The t-value to split at</param>
 		public (BezierQuad4D pre, BezierQuad4D post) Split( float t ) {
 			Vector4 a = new Vector4(
-				P0.x + ( P1.x - P0.x ) * t,
-				P0.y + ( P1.y - P0.y ) * t,
-				P0.z + ( P1.z - P0.z ) * t,
-				P0.w + ( P1.w - P0.w ) * t );
+				P0.X + ( P1.X - P0.X ) * t,
+				P0.Y + ( P1.Y - P0.Y ) * t,
+				P0.Z + ( P1.Z - P0.Z ) * t,
+				P0.W + ( P1.W - P0.W ) * t );
 			Vector4 b = new Vector4(
-				P1.x + ( P2.x - P1.x ) * t,
-				P1.y + ( P2.y - P1.y ) * t,
-				P1.z + ( P2.z - P1.z ) * t,
-				P1.w + ( P2.w - P1.w ) * t );
+				P1.X + ( P2.X - P1.X ) * t,
+				P1.Y + ( P2.Y - P1.Y ) * t,
+				P1.Z + ( P2.Z - P1.Z ) * t,
+				P1.W + ( P2.W - P1.W ) * t );
 			Vector4 p = new Vector4(
-				a.x + ( b.x - a.x ) * t,
-				a.y + ( b.y - a.y ) * t,
-				a.z + ( b.z - a.z ) * t,
-				a.w + ( b.w - a.w ) * t );
+				a.X + ( b.X - a.X ) * t,
+				a.Y + ( b.Y - a.Y ) * t,
+				a.Z + ( b.Z - a.Z ) * t,
+				a.W + ( b.W - a.W ) * t );
 			return ( new BezierQuad4D( P0, a, p ), new BezierQuad4D( p, b, P2 ) );
 		}
 	}

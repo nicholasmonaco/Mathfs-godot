@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -12,7 +13,7 @@ namespace Freya {
 
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-		[SerializeField] Vector4Matrix4x1 pointMatrix;
+		[Export] Vector4Matrix4x1 pointMatrix;
 		[NonSerialized] Polynomial4D curve;
 		[NonSerialized] bool validCoefficients;
 
@@ -87,44 +88,44 @@ namespace Freya {
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static BezierCubic4D Lerp( BezierCubic4D a, BezierCubic4D b, float t ) =>
 			new(
-				Vector4.LerpUnclamped( a.P0, b.P0, t ),
-				Vector4.LerpUnclamped( a.P1, b.P1, t ),
-				Vector4.LerpUnclamped( a.P2, b.P2, t ),
-				Vector4.LerpUnclamped( a.P3, b.P3, t )
+				CoreUtil.LerpUnclamped( a.P0, b.P0, t ),
+				CoreUtil.LerpUnclamped( a.P1, b.P1, t ),
+				CoreUtil.LerpUnclamped( a.P2, b.P2, t ),
+				CoreUtil.LerpUnclamped( a.P3, b.P3, t )
 			);
 		/// <summary>Splits this curve at the given t-value, into two curves that together form the exact same shape</summary>
 		/// <param name="t">The t-value to split at</param>
 		public (BezierCubic4D pre, BezierCubic4D post) Split( float t ) {
 			Vector4 a = new Vector4(
-				P0.x + ( P1.x - P0.x ) * t,
-				P0.y + ( P1.y - P0.y ) * t,
-				P0.z + ( P1.z - P0.z ) * t,
-				P0.w + ( P1.w - P0.w ) * t );
+				P0.X + ( P1.X - P0.X ) * t,
+				P0.Y + ( P1.Y - P0.Y ) * t,
+				P0.Z + ( P1.Z - P0.Z ) * t,
+				P0.W + ( P1.W - P0.W ) * t );
 			Vector4 b = new Vector4(
-				P1.x + ( P2.x - P1.x ) * t,
-				P1.y + ( P2.y - P1.y ) * t,
-				P1.z + ( P2.z - P1.z ) * t,
-				P1.w + ( P2.w - P1.w ) * t );
+				P1.X + ( P2.X - P1.X ) * t,
+				P1.Y + ( P2.Y - P1.Y ) * t,
+				P1.Z + ( P2.Z - P1.Z ) * t,
+				P1.W + ( P2.W - P1.W ) * t );
 			Vector4 c = new Vector4(
-				P2.x + ( P3.x - P2.x ) * t,
-				P2.y + ( P3.y - P2.y ) * t,
-				P2.z + ( P3.z - P2.z ) * t,
-				P2.w + ( P3.w - P2.w ) * t );
+				P2.X + ( P3.X - P2.X ) * t,
+				P2.Y + ( P3.Y - P2.Y ) * t,
+				P2.Z + ( P3.Z - P2.Z ) * t,
+				P2.W + ( P3.W - P2.W ) * t );
 			Vector4 d = new Vector4(
-				a.x + ( b.x - a.x ) * t,
-				a.y + ( b.y - a.y ) * t,
-				a.z + ( b.z - a.z ) * t,
-				a.w + ( b.w - a.w ) * t );
+				a.X + ( b.X - a.X ) * t,
+				a.Y + ( b.Y - a.Y ) * t,
+				a.Z + ( b.Z - a.Z ) * t,
+				a.W + ( b.W - a.W ) * t );
 			Vector4 e = new Vector4(
-				b.x + ( c.x - b.x ) * t,
-				b.y + ( c.y - b.y ) * t,
-				b.z + ( c.z - b.z ) * t,
-				b.w + ( c.w - b.w ) * t );
+				b.X + ( c.X - b.X ) * t,
+				b.Y + ( c.Y - b.Y ) * t,
+				b.Z + ( c.Z - b.Z ) * t,
+				b.W + ( c.W - b.W ) * t );
 			Vector4 p = new Vector4(
-				d.x + ( e.x - d.x ) * t,
-				d.y + ( e.y - d.y ) * t,
-				d.z + ( e.z - d.z ) * t,
-				d.w + ( e.w - d.w ) * t );
+				d.X + ( e.X - d.X ) * t,
+				d.Y + ( e.Y - d.Y ) * t,
+				d.Z + ( e.Z - d.Z ) * t,
+				d.W + ( e.W - d.W ) * t );
 			return ( new BezierCubic4D( P0, a, d, p ), new BezierCubic4D( p, e, c, P3 ) );
 		}
 	}

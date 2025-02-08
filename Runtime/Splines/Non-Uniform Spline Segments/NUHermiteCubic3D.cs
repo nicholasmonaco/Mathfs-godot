@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using ExportAttribute = Godot.ExportAttribute;
 
 namespace Freya {
 
@@ -17,12 +18,13 @@ namespace Freya {
 		}
 
 		// serialized data
-		[SerializeField] Vector3Matrix4x1 pointMatrix;
+		[Export] Vector3Matrix4x1 pointMatrix;
 		public Vector3Matrix4x1 PointMatrix {
 			get => pointMatrix;
 			set => _ = ( pointMatrix = value, validCoefficients = false );
 		}
-		[SerializeField] float k0, k1;
+		[Export] float k0;
+		[Export] float k1;
 		public (float k0, float k1) KnotVector {
 			get => ( k0, k1 );
 			set => _ = ( ( k0, k1 ) = value, validCoefficients = false );

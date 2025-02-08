@@ -2,7 +2,8 @@
 
 using System;
 using Freya;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
 
 public class GenericTrajectory2D {
 

@@ -1,6 +1,7 @@
 // by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
-using UnityEngine;
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
 
 namespace Freya {
 
@@ -56,8 +57,8 @@ namespace Freya {
 		public Vector3 Eval( float sEval, int n = 1 ) {
 			ReadyForEvaluation();
 			return n switch {
-				0 => space.TransformPoint( catenary.Eval( sEval, 0 ) ),
-				_ => space.TransformVector( catenary.Eval( sEval, n ) )
+				0 => space.TransformPoint( catenary.Eval( sEval, 0 ) ).ToVector3(),
+				_ => space.TransformVector( catenary.Eval( sEval, n ) ).ToVector3()
 			};
 		}
 

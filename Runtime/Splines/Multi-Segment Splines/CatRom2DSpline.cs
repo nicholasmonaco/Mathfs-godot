@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -41,9 +42,9 @@ namespace Freya {
 		}
 
 		public List<Node> nodes;
-		[SerializeField] [Range( 0, 1 )] float alpha;
-		[SerializeField] bool autoCalculateKnots;
-		[SerializeField] public EndpointMode endpointMode;
+		[Export(PropertyHint.Range, "0,1")] float alpha;
+		[Export] bool autoCalculateKnots;
+		[Export] public EndpointMode endpointMode;
 		[NonSerialized] bool isDirty;
 
 		#region Properties
@@ -234,7 +235,7 @@ namespace Freya {
 				// todo: it's possible to cache and optimize these distance checks
 				// todo: by caching distances and only recalculating the necessary ones
 				for( int i = 1; i < ControlPointCount; i++ ) {
-					float sqDist = Vector2.SqrMagnitude( nodes[i - 1].pos - nodes[i].pos );
+					float sqDist = ( nodes[i - 1].pos - nodes[i].pos ).LengthSquared();
 					SetKnotInternal( i, SplineUtils.CalcCatRomKnot( nodes[i - 1].knot, sqDist, alpha, true ) );
 				}
 			}
@@ -251,9 +252,9 @@ namespace Freya {
 				index = index.Clamp( 0, ControlPointCount - 1 );
 
 			if( index == -1 ) // extrapolate at the ends
-				return Vector2.LerpUnclamped( nodes[1].pos, nodes[0].pos, 2 );
+				return CoreUtil.LerpUnclamped( nodes[1].pos, nodes[0].pos, 2 );
 			if( index == ControlPointCount )
-				return Vector2.LerpUnclamped( nodes[ControlPointCount - 2].pos, nodes[ControlPointCount - 1].pos, 2 );
+				return CoreUtil.LerpUnclamped( nodes[ControlPointCount - 2].pos, nodes[ControlPointCount - 1].pos, 2 );
 
 			return nodes[index].pos;
 		}

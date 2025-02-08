@@ -1,7 +1,8 @@
 // by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
 using System;
-using UnityEngine;
+
+using ExportAttribute = Godot.ExportAttribute;
 
 namespace Freya {
 
@@ -14,10 +15,17 @@ namespace Freya {
 		public static readonly Rational MinValue = new(int.MinValue, 1);
 
 		/// <summary>The numerator of this number</summary>
-		[SerializeField] public int n;
+		[Export] public int n;
 
 		/// <summary>The denominator of this number</summary>
-		[SerializeField] [NonZeroInteger] public int d;
+		/*[NonZeroInteger]*/ public int d = 1;
+
+		[Export] private int _d {
+			get => d;
+			set {
+				if(value != 0) d = value;
+			}
+		}
 
 		/// <summary>Creates an exact representation of a rational number</summary>
 		/// <param name="num">The numerator of this number</param>

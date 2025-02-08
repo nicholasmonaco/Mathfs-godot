@@ -3,7 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
 
 namespace Freya {
 

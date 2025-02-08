@@ -2,7 +2,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
 
 namespace Freya {
 
@@ -28,11 +29,11 @@ namespace Freya {
 
 		/// <summary>Implicitly casts a Unity ray to a Mathfs ray</summary>
 		/// <param name="ray">The ray to cast to a Unity ray</param>
-		public static implicit operator Ray2D( Ray ray ) => new Ray2D( ray.origin, ray.direction );
+		public static implicit operator Ray2D( Ray ray ) => new Ray2D( ray.Origin.ToVector2(), ray.Direction.ToVector2() );
 
 		/// <summary>Implicitly casts a Mathfs ray to a Unity ray</summary>
 		/// <param name="ray">The ray to cast to a Mathfs ray</param>
-		public static implicit operator UnityEngine.Ray2D( Ray2D ray ) => new UnityEngine.Ray2D( ray.origin, ray.dir );
+		// public static implicit operator UnityEngine.Ray2D( Ray2D ray ) => new UnityEngine.Ray2D( ray.origin, ray.dir );
 
 		#region Internal interface stuff for generic line tests
 

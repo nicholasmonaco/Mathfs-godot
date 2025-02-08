@@ -2,7 +2,9 @@
 
 using System;
 using System.Globalization;
-using UnityEngine;
+
+using Vector3 = Godot.Vector3;
+using Quaternion = Godot.Quaternion;
 
 namespace Freya {
 
@@ -23,15 +25,15 @@ namespace Freya {
 		}
 
 		public Matrix3x3( Vector3 col0, Vector3 col1, Vector3 col2 ) {
-			m00 = col0.x;
-			m10 = col0.y;
-			m20 = col0.z;
-			m01 = col1.x;
-			m11 = col1.y;
-			m21 = col1.z;
-			m02 = col2.x;
-			m12 = col2.y;
-			m22 = col2.z;
+			m00 = col0.X;
+			m10 = col0.Y;
+			m20 = col0.Z;
+			m01 = col1.X;
+			m11 = col1.Y;
+			m21 = col1.Z;
+			m02 = col2.X;
+			m12 = col2.Y;
+			m22 = col2.Z;
 		}
 
 		public Matrix3x3( Matrix4x4 m ) {
@@ -49,9 +51,9 @@ namespace Freya {
 
 		public static Matrix3x3 Scale( Vector3 s ) {
 			return new Matrix3x3(
-				s.x, 0, 0,
-				0, s.y, 0,
-				0, 0, s.z
+				s.X, 0, 0,
+				0, s.Y, 0,
+				0, 0, s.Z
 			);
 		}
 
@@ -110,10 +112,15 @@ namespace Freya {
 				return m00 * A1212 - m01 * A0212 + m02 * A0112;
 			}
 		}
+
 		public Matrix3x3 Transpose =>
 			new(m00, m10, m20,
 				m01, m11, m21,
 				m02, m12, m22);
+
+		public static Matrix3x3 FromAxisAngle(Vector3 axis, float angle) {
+			return new Matrix3x3(); // todo
+		}
 
 		public override string ToString() => ToStringMatrix().ToValueTableString();
 
@@ -167,9 +174,9 @@ namespace Freya {
 				m.m0 * c.m20 + m.m1 * c.m21 + m.m2 * c.m22);
 
 		public static Vector3 operator *( Matrix3x3 c, Vector3 v ) =>
-			new(v.x * c.m00 + v.y * c.m01 + v.z * c.m02,
-				v.x * c.m10 + v.y * c.m11 + v.z * c.m12,
-				v.x * c.m20 + v.y * c.m21 + v.z * c.m22);
+			new(v.X * c.m00 + v.Y * c.m01 + v.Z * c.m02,
+				v.X * c.m10 + v.Y * c.m11 + v.Z * c.m12,
+				v.X * c.m20 + v.Y * c.m21 + v.Z * c.m22);
 
 		public static Vector2Matrix3x1 operator *( Matrix3x3 c, Vector2Matrix3x1 m ) => new(c * m.X, c * m.Y);
 

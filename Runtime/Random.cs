@@ -1,8 +1,11 @@
 ﻿// by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
-using UnityEngine;
 using static Freya.Mathfs;
-using UnityRandom = UnityEngine.Random;
+
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
+
+using Ndot;
 
 namespace Freya {
 
@@ -11,7 +14,7 @@ namespace Freya {
 
 		// 1D
 		/// <summary>Returns a random value between 0 and 1</summary>
-		public static float Value => UnityRandom.value;
+		public static float Value => NRandom.NextValue();
 
 		/// <summary>Randomly returns either -1 or 1</summary>
 		public static float Sign => Value > 0.5f ? 1f : -1f;
@@ -22,12 +25,12 @@ namespace Freya {
 		/// <summary>Randomly returns a value between <c>min</c> [inclusive] and <c>max</c> [inclusive]</summary>
 		/// <param name="min">The minimum value [inclusive] </param>
 		/// <param name="max">The maximum value [inclusive]</param>
-		public static float Range( float min, float max ) => UnityRandom.Range( min, max );
+		public static float Range( float min, float max ) => NRandom.Range( min, max );
 		
 		/// <summary>Randomly returns a value between <c>min</c> [inclusive] and <c>max</c> [exclusive]</summary>
 		/// <param name="min">The minimum value [inclusive]</param>
 		/// <param name="max">The maximum value [exclusive]</param>
-		public static int Range( int min, int max ) => UnityRandom.Range( min, max );
+		public static int Range( int min, int max ) => NRandom.Range( min, max );
 
 		// 2D
 		/// <summary>Returns a random point on the unit circle</summary>
@@ -37,20 +40,20 @@ namespace Freya {
 		public static Vector2 Direction2D => OnUnitCircle;
 
 		/// <summary>Returns a random point inside the unit circle</summary>
-		public static Vector2 InUnitCircle => UnityRandom.insideUnitCircle;
+		public static Vector2 InUnitCircle => NRandom.RandomInsideUnitCircle();
 
 		/// <summary>Returns a random point inside the unit square. Values are between 0 to 1</summary>
 		public static Vector2 InUnitSquare => new Vector2( Value, Value );
 
 		// 3D
 		/// <summary>Returns a random point on the unit sphere</summary>
-		public static Vector3 OnUnitSphere => UnityRandom.onUnitSphere;
+		public static Vector3 OnUnitSphere => NRandom.RandomOnUnitSphere();
 
 		/// <summary>Returns a random 3D direction, equivalent to <c>OnUnitSphere</c></summary>
 		public static Vector3 Direction3D => OnUnitSphere;
 
 		/// <summary>Returns a random point inside the unit sphere</summary>
-		public static Vector3 InUnitSphere => UnityRandom.insideUnitSphere;
+		public static Vector3 InUnitSphere => NRandom.RandomInsideUnitSphere();
 
 		/// <summary>Returns a random point inside the unit cube. Values are between 0 to 1</summary>
 		public static Vector3 InUnitCube => new Vector3( Value, Value, Value );
@@ -61,7 +64,7 @@ namespace Freya {
 
 		// 3D Orientation
 		/// <summary>Returns a random uniformly distributed rotation</summary>
-		public static Quaternion Rotation => UnityRandom.rotationUniform;
+		// public static Quaternion Rotation => NRandom.RandomUniformRotation(); // .rotationUniform;
 	}
 
 }

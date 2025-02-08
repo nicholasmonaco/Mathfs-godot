@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -12,7 +13,7 @@ namespace Freya {
 
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-		[SerializeField] Vector2Matrix4x1 pointMatrix;
+		[Export] Vector2Matrix4x1 pointMatrix;
 		[NonSerialized] Polynomial2D curve;
 		[NonSerialized] bool validCoefficients;
 
@@ -62,7 +63,7 @@ namespace Freya {
 
 		/// <summary>Returns this spline segment in 3D, where z = 0</summary>
 		/// <param name="curve2D">The 2D curve to cast to 3D</param>
-		public static explicit operator CatRomCubic3D( CatRomCubic2D curve2D ) => new CatRomCubic3D( curve2D.P0, curve2D.P1, curve2D.P2, curve2D.P3 );
+		public static explicit operator CatRomCubic3D( CatRomCubic2D curve2D ) => new CatRomCubic3D( curve2D.P0.ToVector3(), curve2D.P1.ToVector3(), curve2D.P2.ToVector3(), curve2D.P3.ToVector3() );
 		public static explicit operator BezierCubic2D( CatRomCubic2D s ) =>
 			new BezierCubic2D(
 				s.P1,
@@ -90,10 +91,10 @@ namespace Freya {
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static CatRomCubic2D Lerp( CatRomCubic2D a, CatRomCubic2D b, float t ) =>
 			new(
-				Vector2.LerpUnclamped( a.P0, b.P0, t ),
-				Vector2.LerpUnclamped( a.P1, b.P1, t ),
-				Vector2.LerpUnclamped( a.P2, b.P2, t ),
-				Vector2.LerpUnclamped( a.P3, b.P3, t )
+				CoreUtil.LerpUnclamped( a.P0, b.P0, t ),
+				CoreUtil.LerpUnclamped( a.P1, b.P1, t ),
+				CoreUtil.LerpUnclamped( a.P2, b.P2, t ),
+				CoreUtil.LerpUnclamped( a.P3, b.P3, t )
 			);
 	}
 }

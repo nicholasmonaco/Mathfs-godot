@@ -2,7 +2,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -29,7 +31,7 @@ namespace Freya {
 
 		/// <summary>The signed distance from this line to a point. Points to the left of this line are positive</summary>
 		/// <param name="point">The point to check the signed distance to</param>
-		[MethodImpl( INLINE )] public float SignedDistance( Vector2 point ) => Determinant( dir.normalized, point - origin );
+		[MethodImpl( INLINE )] public float SignedDistance( Vector2 point ) => Determinant( dir.Normalized(), point - origin );
 
 		#region Interface stuff for generic line tests
 
@@ -51,7 +53,7 @@ namespace Freya {
 		/// <param name="lineDir">Line direction (does not have to be normalized)</param>
 		/// <param name="point">The point to project onto the line</param>
 		[MethodImpl( INLINE )] public static float ProjectPointToLineTValue( Vector2 lineOrigin, Vector2 lineDir, Vector2 point ) {
-			return Vector2.Dot( lineDir, point - lineOrigin ) / Vector2.Dot( lineDir, lineDir );
+			return lineDir.Dot( point - lineOrigin ) / lineDir.Dot( lineDir );
 		}
 
 		/// <summary>Projects a point onto an infinite line</summary>
@@ -72,7 +74,7 @@ namespace Freya {
 		/// <param name="planeNormal">Plane normal (has to be normalized for a true distance)</param>
 		/// <param name="point">The point to use when checking distance to the plane</param>
 		[MethodImpl( INLINE )] public static float PointToPlaneSignedDistance( Vector2 planeOrigin, Vector2 planeNormal, Vector2 point ) {
-			return Vector2.Dot( point - planeOrigin, planeNormal );
+			return (point - planeOrigin).Dot( planeNormal );
 		}
 
 		/// <summary>Returns the distance to a 2D plane</summary>

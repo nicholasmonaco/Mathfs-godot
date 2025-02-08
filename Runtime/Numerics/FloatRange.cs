@@ -1,7 +1,10 @@
 ﻿// by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
 using System;
-using UnityEngine;
+
+using Vector3 = Godot.Vector3;
+using Rect = Godot.Rect2;
+using Bounds = Godot.Aabb;
 
 namespace Freya {
 

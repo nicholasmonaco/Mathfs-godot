@@ -1,7 +1,8 @@
 ﻿// by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
 using System;
-using UnityEngine;
+
+using Vector3 = Godot.Vector3;
 
 namespace Freya {
 
@@ -24,7 +25,7 @@ namespace Freya {
 			// open:		0 0[0 1 2 3 4]4 4
 			// closed:	   [0 1 2 3 4 5 6 7 8]
 			for( int i = 0; i < kCount; i++ )
-				knots[i] = open == false ? i : Mathf.Clamp( i - degree, 0, kCount - 2 * degree - 1 );
+				knots[i] = open == false ? i : Math.Clamp( i - degree, 0, kCount - 2 * degree - 1 );
 			return knots;
 		}
 
@@ -37,8 +38,8 @@ namespace Freya {
 		public static float CalcCatRomKnot( float dist, float alpha, bool isSquaredDist ) =>
 			alpha switch {
 				0    => 1, // uniform
-				0.5f => isSquaredDist ? dist.Pow( 0.25f ) : Mathf.Sqrt( dist ), // centripetal
-				1    => isSquaredDist ? Mathf.Sqrt( dist ) : dist, // chordal
+				0.5f => isSquaredDist ? dist.Pow( 0.25f ) : MathF.Sqrt( dist ), // centripetal
+				1    => isSquaredDist ? MathF.Sqrt( dist ) : dist, // chordal
 				_    => isSquaredDist ? dist.Pow( 0.5f * alpha ) : dist.Pow( alpha )
 			};
 
@@ -50,18 +51,18 @@ namespace Freya {
 		public static Matrix4x1 CalcCatRomKnots( Vector2Matrix4x1 m, float alpha, bool unitInterval ) {
 			if( alpha == 0 ) // uniform catrom
 				return GetUniformKnots( unitInterval );
-			float sqMag01 = Vector2.SqrMagnitude( m.m0 - m.m1 );
-			float sqMag12 = Vector2.SqrMagnitude( m.m1 - m.m2 );
-			float sqMag23 = Vector2.SqrMagnitude( m.m2 - m.m3 );
+			float sqMag01 = ( m.m0 - m.m1 ).LengthSquared();
+			float sqMag12 = ( m.m1 - m.m2 ).LengthSquared();
+			float sqMag23 = ( m.m2 - m.m3 ).LengthSquared();
 			return CalcCatRomKnots( sqMag01, sqMag12, sqMag23, alpha, unitInterval, isSquaredDist:true );
 		}
 
 		public static Matrix4x1 CalcCatRomKnots( Vector3Matrix4x1 m, float alpha, bool unitInterval ) {
 			if( alpha == 0 ) // uniform catrom
 				return GetUniformKnots( unitInterval );
-			float sqMag01 = Vector3.SqrMagnitude( m.m0 - m.m1 );
-			float sqMag12 = Vector3.SqrMagnitude( m.m1 - m.m2 );
-			float sqMag23 = Vector3.SqrMagnitude( m.m2 - m.m3 );
+			float sqMag01 = ( m.m0 - m.m1 ).LengthSquared();
+			float sqMag12 = ( m.m1 - m.m2 ).LengthSquared();
+			float sqMag23 = ( m.m2 - m.m3 ).LengthSquared();
 			return CalcCatRomKnots( sqMag01, sqMag12, sqMag23, alpha, unitInterval, isSquaredDist:true );
 		}
 

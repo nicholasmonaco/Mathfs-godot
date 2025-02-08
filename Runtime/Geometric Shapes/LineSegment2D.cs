@@ -2,7 +2,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
 
 namespace Freya {
 
@@ -29,14 +30,14 @@ namespace Freya {
 
 		/// <summary>Returns the normalized direction of this line. Equivalent to <c>(end-start).normalized</c></summary>
 		public Vector2 Direction {
-			[MethodImpl( INLINE )] get => Displacement.normalized;
+			[MethodImpl( INLINE )] get => Displacement.Normalized();
 		}
 
 		/// <summary>Calculates the length of the line segment</summary>
 		public float Length {
 			[MethodImpl( INLINE )] get {
-				float dx = end.x - start.x;
-				float dy = end.y - start.y;
+				float dx = end.X - start.X;
+				float dy = end.Y - start.Y;
 				return (float)Math.Sqrt( dx * dx + dy * dy );
 			}
 		}
@@ -44,8 +45,8 @@ namespace Freya {
 		/// <summary>Calculates the length squared (faster than calculating the actual length)</summary>
 		public float LengthSquared {
 			[MethodImpl( INLINE )] get {
-				float dx = end.x - start.x;
-				float dy = end.y - start.y;
+				float dx = end.X - start.X;
+				float dy = end.Y - start.Y;
 				return dx * dx + dy * dy;
 			}
 		}

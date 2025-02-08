@@ -2,7 +2,14 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
+using Vector4 = Godot.Vector4;
+using Quaternion = Godot.Quaternion;
+
+using Ndot;
+
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -72,8 +79,8 @@ namespace Freya {
 			for( int i = 1; i < accuracy; i++ ) {
 				float t = i / ( accuracy - 1f );
 				Vector2 p = curve.Eval( unit ? t : interval.Lerp( t ) );
-				float dx = p.x - prev.x;
-				float dy = p.y - prev.y;
+				float dx = p.X - prev.X;
+				float dy = p.Y - prev.Y;
 				totalDist += MathF.Sqrt( dx * dx + dy * dy );
 				prev = p;
 			}
@@ -99,9 +106,9 @@ namespace Freya {
 			for( int i = 1; i < accuracy; i++ ) {
 				float t = i / ( accuracy - 1f );
 				Vector3 p = curve.Eval( unit ? t : interval.Lerp( t ) );
-				float dx = p.x - prev.x;
-				float dy = p.y - prev.y;
-				float dz = p.z - prev.z;
+				float dx = p.X - prev.X;
+				float dy = p.Y - prev.Y;
+				float dz = p.Z - prev.Z;
 				totalDist += MathF.Sqrt( dx * dx + dy * dy + dz * dz );
 				prev = p;
 			}
@@ -117,7 +124,7 @@ namespace Freya {
 
 		/// <summary>Returns the normalized tangent direction at the given t-value on the curve</summary>
 		/// <param name="t">The t-value along the curve to sample</param>
-		[MethodImpl( INLINE )] public static Vector2 EvalTangent<T>( this T curve, float t ) where T : IParamCurve1Diff<Vector2> => curve.EvalDerivative( t ).normalized;
+		[MethodImpl( INLINE )] public static Vector2 EvalTangent<T>( this T curve, float t ) where T : IParamCurve1Diff<Vector2> => curve.EvalDerivative( t ).Normalized();
 
 		/// <summary>Returns the normal direction at the given t-value on the curve.
 		/// This normal will point to the inner arc of the current curvature</summary>
@@ -147,7 +154,7 @@ namespace Freya {
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
 		/// <inheritdoc cref="IParamCurve1DiffExt2D.EvalTangent{T}(T,float)"/>
-		[MethodImpl( INLINE )] public static Vector3 EvalTangent<T>( this T curve, float t ) where T : IParamCurve1Diff<Vector3> => curve.EvalDerivative( t ).normalized;
+		[MethodImpl( INLINE )] public static Vector3 EvalTangent<T>( this T curve, float t ) where T : IParamCurve1Diff<Vector3> => curve.EvalDerivative( t ).Normalized();
 
 		/// <summary>Returns a normal of the curve given a reference up vector and t-value on the curve.
 		/// The normal will be perpendicular to both the supplied up vector and the curve</summary>
@@ -166,13 +173,13 @@ namespace Freya {
 		/// The Y axis will attempt to align with the supplied up vector</summary>
 		/// <param name="t">The t-value along the curve to sample</param>
 		/// <param name="up">The reference up vector. The Y axis will attempt to be as aligned with this vector as much as possible</param>
-		[MethodImpl( INLINE )] public static Quaternion EvalOrientation<T>( this T curve, float t, Vector3 up ) where T : IParamCurve1Diff<Vector3> => Quaternion.LookRotation( curve.EvalDerivative( t ), up );
+		[MethodImpl( INLINE )] public static Quaternion EvalOrientation<T>( this T curve, float t, Vector3 up ) where T : IParamCurve1Diff<Vector3> => NMath.LookRotation( curve.EvalDerivative( t ), up );
 
 		/// <summary>Returns the position and orientation of curve at the given point t, where the Z direction is tangent to the curve.
 		/// The Y axis will attempt to align with the supplied up vector</summary>
 		/// <param name="t">The t-value along the curve to sample</param>
 		/// <param name="up">The reference up vector. The Y axis will attempt to be as aligned with this vector as much as possible</param>
-		[MethodImpl( INLINE )] public static Pose EvalPose<T>( this T curve, float t, Vector3 up ) where T : IParamCurve1Diff<Vector3> => new Pose( curve.Eval( t ), Quaternion.LookRotation( curve.EvalDerivative( t ), up ) );
+		[MethodImpl( INLINE )] public static Pose EvalPose<T>( this T curve, float t, Vector3 up ) where T : IParamCurve1Diff<Vector3> => new Pose( curve.Eval( t ), NMath.LookRotation( curve.EvalDerivative( t ), up ) );
 
 		/// <summary>Returns the position and orientation of curve at the given point t, expressed as a matrix, where the Z direction is tangent to the curve.
 		/// The Y axis will attempt to align with the supplied up vector</summary>
@@ -180,13 +187,13 @@ namespace Freya {
 		/// <param name="up">The reference up vector. The Y axis will attempt to be as aligned with this vector as much as possible</param>
 		public static Matrix4x4 EvalMatrix<T>( this T curve, float t, Vector3 up ) where T : IParamCurve1Diff<Vector3> {
 			( Vector3 Pt, Vector3 Tn ) = ( curve.Eval( t ), curve.EvalTangent( t ) );
-			Vector3 Nm = Vector3.Cross( up, Tn ).normalized; // X axis
-			Vector3 Bn = Vector3.Cross( Tn, Nm ); // Y axis
+			Vector3 Nm = up.Cross( Tn ).Normalized(); // X axis
+			Vector3 Bn = Tn.Cross( Nm ); // Y axis
 			return new Matrix4x4(
-				new Vector4( Nm.x, Nm.y, Nm.z, 0 ),
-				new Vector4( Bn.x, Bn.y, Bn.z, 0 ),
-				new Vector4( Tn.x, Tn.y, Tn.z, 0 ),
-				new Vector4( Pt.x, Pt.y, Pt.z, 1 )
+				new Vector4( Nm.X, Nm.Y, Nm.Z, 0 ),
+				new Vector4( Bn.X, Bn.Y, Bn.Z, 0 ),
+				new Vector4( Tn.X, Tn.Y, Tn.Z, 0 ),
+				new Vector4( Pt.X, Pt.Y, Pt.Z, 1 )
 			);
 		}
 	}
@@ -235,8 +242,8 @@ namespace Freya {
 		/// <param name="t">The t-value along the curve to sample</param>
 		[MethodImpl( INLINE )] public static Pose EvalArcPose<T>( this T curve, float t ) where T : IParamCurve2Diff<Vector3> {
 			( Vector3 pt, Vector3 vel, Vector3 acc ) = ( curve.Eval( t ), curve.EvalDerivative( t ), curve.EvalSecondDerivative( t ) );
-			Vector3 binormal = Vector3.Cross( vel, acc );
-			return new Pose( pt, Quaternion.LookRotation( vel, binormal ) );
+			Vector3 binormal = vel.Cross( acc );
+			return new Pose( pt, NMath.LookRotation( vel, binormal ) );
 		}
 
 		/// <summary>Returns the position and the frenet-serret (curvature-based) orientation of curve at the given point t, expressed as a matrix, where the Z direction is tangent to the curve.
@@ -246,14 +253,14 @@ namespace Freya {
 			Vector3 P = curve.Eval( t );
 			Vector3 vel = curve.EvalDerivative( t );
 			Vector3 acc = curve.EvalSecondDerivative( t );
-			Vector3 Tn = vel.normalized;
-			Vector3 B = Vector3.Cross( vel, acc ).normalized;
-			Vector3 N = Vector3.Cross( B, Tn );
+			Vector3 Tn = vel.Normalized();
+			Vector3 B = vel.Cross( acc ).Normalized();
+			Vector3 N = B.Cross( Tn );
 			return new Matrix4x4(
-				new Vector4( N.x, N.y, N.z, 0 ),
-				new Vector4( B.x, B.y, B.z, 0 ),
-				new Vector4( Tn.x, Tn.y, Tn.z, 0 ),
-				new Vector4( P.x, P.y, P.z, 1 )
+				new Vector4( N.X, N.Y, N.Z, 0 ),
+				new Vector4( B.X, B.Y, B.Z, 0 ),
+				new Vector4( Tn.X, Tn.Y, Tn.Z, 0 ),
+				new Vector4( P.X, P.Y, P.Z, 1 )
 			);
 		}
 

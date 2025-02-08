@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector3 = Godot.Vector3;
 
 namespace Freya {
 
@@ -46,11 +47,11 @@ namespace Freya {
 		public Vector3 Eval( float t ) {
 			float n = Count - 1;
 			for( int i = 0; i < n; i++ )
-				ptEvalBuffer[i] = Vector3.LerpUnclamped( points[i], points[i + 1], t );
+				ptEvalBuffer[i] = CoreUtil.LerpUnclamped( points[i], points[i + 1], t );
 			while( n > 1 ) {
 				n--;
 				for( int i = 0; i < n; i++ )
-					ptEvalBuffer[i] = Vector3.LerpUnclamped( ptEvalBuffer[i], ptEvalBuffer[i + 1], t );
+					ptEvalBuffer[i] = CoreUtil.LerpUnclamped( ptEvalBuffer[i], ptEvalBuffer[i + 1], t );
 			}
 
 			return ptEvalBuffer[0];

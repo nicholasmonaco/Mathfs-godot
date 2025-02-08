@@ -2,7 +2,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector3 = Godot.Vector3;
+
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -29,7 +31,7 @@ namespace Freya {
 
 		/// <summary>The signed distance from this line to a point. Points to the left of this line are positive</summary>
 		/// <param name="point">The point to check the signed distance to</param>
-		[MethodImpl( INLINE )] public float SignedDistance( Vector3 point ) => Determinant( dir.normalized, point - origin );
+		[MethodImpl( INLINE )] public float SignedDistance( Vector3 point ) => Determinant( dir.Normalized(), point - origin );
 
 		#region Interface stuff for generic line tests
 
@@ -51,7 +53,7 @@ namespace Freya {
 		/// <param name="lineDir">Line direction (does not have to be normalized)</param>
 		/// <param name="point">The point to project onto the line</param>
 		[MethodImpl( INLINE )] public static float ProjectPointToLineTValue( Vector3 lineOrigin, Vector3 lineDir, Vector3 point ) {
-			return Vector3.Dot( lineDir, point - lineOrigin ) / Vector3.Dot( lineDir, lineDir );
+			return lineDir.Dot( point - lineOrigin ) / lineDir.Dot( lineDir );
 		}
 
 		/// <summary>Gets the t-values of the closest point between two infinite lines, returning the two t-values along the line</summary>
@@ -66,11 +68,11 @@ namespace Freya {
 			Vector3 c = bOrigin;
 			Vector3 d = bDir;
 			Vector3 e = a - c;
-			float be = Vector3.Dot( b, e );
-			float de = Vector3.Dot( d, e ); 
-			float bd = Vector3.Dot( b, d );
-			float b2 = Vector3.Dot( b, b );
-			float d2 = Vector3.Dot( d, d );
+			float be = b.Dot( e );
+			float de = d.Dot( e ); 
+			float bd = b.Dot( d );
+			float b2 = b.Dot( b );
+			float d2 = d.Dot( d );
 			float A = -b2 * d2 + bd * bd;
 
 			float s = ( -b2 * de + be * bd ) / A;
@@ -78,9 +80,9 @@ namespace Freya {
 
 			return ( t, s );
 
-			// Vector3 n = Vector3.Cross( aDir, bDir );
-			// float nMag = n.magnitude;
-			// float dist = Vector3.Dot( n, aOrigin - bOrigin ) / nMag;
+			// Vector3 n = aDir.Cross( bDir );
+			// float nMag = n.Length();
+			// float dist = n.Dot( aOrigin - bOrigin ) / nMag;
 		}
 
 		/// <summary>Projects a point onto an infinite line</summary>
@@ -101,7 +103,7 @@ namespace Freya {
 		/// <param name="planeNormal">Plane normal (has to be normalized for a true distance)</param>
 		/// <param name="point">The point to use when checking distance to the plane</param>
 		[MethodImpl( INLINE )] public static float PointToPlaneSignedDistance( Vector3 planeOrigin, Vector3 planeNormal, Vector3 point ) {
-			return Vector3.Dot( point - planeOrigin, planeNormal );
+			return (point - planeOrigin).Dot( planeNormal );
 		}
 
 		/// <summary>Returns the distance to a 3D plane</summary>

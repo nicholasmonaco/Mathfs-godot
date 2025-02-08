@@ -1,5 +1,6 @@
 ﻿using System;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
 
 namespace Freya {
 

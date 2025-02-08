@@ -2,7 +2,10 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
+
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -49,12 +52,12 @@ namespace Freya {
 
 		/// <summary>The width of this rectangle</summary>
 		public float Width {
-			[MethodImpl( INLINE )] get => extents.x * 2;
+			[MethodImpl( INLINE )] get => extents.X * 2;
 		}
 
 		/// <summary>The height of this rectangle</summary>
 		public float Height {
-			[MethodImpl( INLINE )] get => extents.y * 2;
+			[MethodImpl( INLINE )] get => extents.Y * 2;
 		}
 	}
 
@@ -66,17 +69,17 @@ namespace Freya {
 
 		/// <inheritdoc cref="Box2D.Width"/>
 		public float Width {
-			[MethodImpl( INLINE )] get => extents.x * 2;
+			[MethodImpl( INLINE )] get => extents.X * 2;
 		}
 
 		/// <inheritdoc cref="Box2D.Height"/>
 		public float Height {
-			[MethodImpl( INLINE )] get => extents.y * 2;
+			[MethodImpl( INLINE )] get => extents.Y * 2;
 		}
 
 		/// <summary>The depth of this box</summary>
 		public float Depth {
-			[MethodImpl( INLINE )] get => extents.z * 2;
+			[MethodImpl( INLINE )] get => extents.Z * 2;
 		}
 	}
 
@@ -87,22 +90,22 @@ namespace Freya {
 	public partial struct Box2D {
 		/// <summary>The minimum coordinates inside the box, per axis</summary>
 		public Vector2 Min {
-			[MethodImpl( INLINE )] get => new Vector2( center.x - extents.x, center.y - extents.y );
+			[MethodImpl( INLINE )] get => new Vector2( center.X - extents.X, center.Y - extents.Y );
 		}
 		/// <summary>The maximum coordinates inside the box, per axis</summary>
 		public Vector2 Max {
-			[MethodImpl( INLINE )] get => new Vector2( center.x + extents.x, center.y + extents.y );
+			[MethodImpl( INLINE )] get => new Vector2( center.X + extents.X, center.Y + extents.Y );
 		}
 	}
 
 	public partial struct Box3D {
 		/// <inheritdoc cref="Box2D.Min"/>
 		public Vector3 Min {
-			[MethodImpl( INLINE )] get => new Vector3( center.x - extents.x, center.y - extents.y, center.z - extents.z );
+			[MethodImpl( INLINE )] get => new Vector3( center.X - extents.X, center.Y - extents.Y, center.Z - extents.Z );
 		}
 		/// <inheritdoc cref="Box2D.Max"/>
 		public Vector3 Max {
-			[MethodImpl( INLINE )] get => new Vector3( center.x + extents.x, center.y + extents.y, center.z + extents.z );
+			[MethodImpl( INLINE )] get => new Vector3( center.X + extents.X, center.Y + extents.Y, center.Z + extents.Z );
 		}
 	}
 
@@ -115,10 +118,10 @@ namespace Freya {
 		/// <param name="index">The index of the vertex to retrieve</param>
 		public Vector2 GetVertex( int index ) {
 			switch( index ) {
-				case 0:  return new Vector2( center.x - extents.x, center.y - extents.y );
-				case 1:  return new Vector2( center.x - extents.x, center.y + extents.y );
-				case 2:  return new Vector2( center.x + extents.x, center.y - extents.y );
-				case 3:  return new Vector2( center.x + extents.x, center.y + extents.y );
+				case 0:  return new Vector2( center.X - extents.X, center.Y - extents.Y );
+				case 1:  return new Vector2( center.X - extents.X, center.Y + extents.Y );
+				case 2:  return new Vector2( center.X + extents.X, center.Y - extents.Y );
+				case 3:  return new Vector2( center.X + extents.X, center.Y + extents.Y );
 				default: throw new ArgumentOutOfRangeException( nameof(index), $"Invalid index: {index}. Valid vertex indices range from 0 to {VERTEX_COUNT - 1}" );
 			}
 		}
@@ -128,14 +131,14 @@ namespace Freya {
 		/// <inheritdoc cref="Box2D.GetVertex"/>
 		public Vector2 GetVertex( int index ) {
 			switch( index ) {
-				case 0:  return new Vector3( center.x - extents.x, center.y - extents.y, center.z - extents.z );
-				case 1:  return new Vector3( center.x - extents.x, center.y - extents.y, center.z + extents.z );
-				case 2:  return new Vector3( center.x - extents.x, center.y + extents.y, center.z - extents.z );
-				case 3:  return new Vector3( center.x - extents.x, center.y + extents.y, center.z + extents.z );
-				case 4:  return new Vector3( center.x + extents.x, center.y - extents.y, center.z - extents.z );
-				case 5:  return new Vector3( center.x + extents.x, center.y - extents.y, center.z + extents.z );
-				case 6:  return new Vector3( center.x + extents.x, center.y + extents.y, center.z - extents.z );
-				case 7:  return new Vector3( center.x + extents.x, center.y + extents.y, center.z + extents.z );
+				case 0:  return new Vector3( center.X - extents.X, center.Y - extents.Y, center.Z - extents.Z ).ToVector2();
+				case 1:  return new Vector3( center.X - extents.X, center.Y - extents.Y, center.Z + extents.Z ).ToVector2();
+				case 2:  return new Vector3( center.X - extents.X, center.Y + extents.Y, center.Z - extents.Z ).ToVector2();
+				case 3:  return new Vector3( center.X - extents.X, center.Y + extents.Y, center.Z + extents.Z ).ToVector2();
+				case 4:  return new Vector3( center.X + extents.X, center.Y - extents.Y, center.Z - extents.Z ).ToVector2();
+				case 5:  return new Vector3( center.X + extents.X, center.Y - extents.Y, center.Z + extents.Z ).ToVector2();
+				case 6:  return new Vector3( center.X + extents.X, center.Y + extents.Y, center.Z - extents.Z ).ToVector2();
+				case 7:  return new Vector3( center.X + extents.X, center.Y + extents.Y, center.Z + extents.Z ).ToVector2();
 				default: throw new ArgumentOutOfRangeException( nameof(index), $"Invalid index: {index}. Valid vertex indices range from 0 to {VERTEX_COUNT - 1}" );
 			}
 		}
@@ -148,14 +151,14 @@ namespace Freya {
 	public partial struct Box2D {
 		/// <summary>The area of this rectangle</summary>
 		public float Area {
-			[MethodImpl( INLINE )] get => ( extents.x * extents.y ) * 4;
+			[MethodImpl( INLINE )] get => ( extents.X * extents.Y ) * 4;
 		}
 	}
 
 	public partial struct Box3D {
 		/// <summary>The volume of this cuboid</summary>
 		public float Volume {
-			[MethodImpl( INLINE )] get => ( extents.x * extents.y * extents.z ) * 8;
+			[MethodImpl( INLINE )] get => ( extents.X * extents.Y * extents.Z ) * 8;
 		}
 	}
 
@@ -166,14 +169,14 @@ namespace Freya {
 	public partial struct Box2D {
 		/// <summary>The total perimeter length of this rectangle</summary>
 		public float Perimeter {
-			[MethodImpl( INLINE )] get => 4 * ( extents.x + extents.y );
+			[MethodImpl( INLINE )] get => 4 * ( extents.X + extents.Y );
 		}
 	}
 
 	public partial struct Box3D {
 		/// <summary>The total surface area of this cuboid</summary>
 		public float SurfaceArea {
-			[MethodImpl( INLINE )] get => 4 * ( extents.y * ( extents.x + extents.z ) + extents.z * extents.x );
+			[MethodImpl( INLINE )] get => 4 * ( extents.Y * ( extents.X + extents.Z ) + extents.Z * extents.X );
 		}
 	}
 
@@ -184,12 +187,12 @@ namespace Freya {
 	public partial struct Box2D {
 		/// <summary>Returns whether or not a point is inside this box</summary>
 		/// <param name="point">The point to test if it's inside</param>
-		[MethodImpl( INLINE )] public bool Contains( Vector2 point ) => Abs( point.x - center.x ) - extents.x <= 0 && Abs( point.y - center.y ) - extents.y <= 0;
+		[MethodImpl( INLINE )] public bool Contains( Vector2 point ) => Abs( point.X - center.X ) - extents.X <= 0 && Abs( point.Y - center.Y ) - extents.Y <= 0;
 	}
 
 	public partial struct Box3D {
 		/// <inheritdoc cref="Box2D.Contains"/>
-		[MethodImpl( INLINE )] public bool Contains( Vector3 point ) => Abs( point.x - center.x ) - extents.x <= 0 && Abs( point.y - center.y ) - extents.y <= 0 && Abs( point.z - center.z ) - extents.z <= 0;
+		[MethodImpl( INLINE )] public bool Contains( Vector3 point ) => Abs( point.X - center.X ) - extents.X <= 0 && Abs( point.Y - center.Y ) - extents.Y <= 0 && Abs( point.Z - center.Z ) - extents.Z <= 0;
 	}
 
 	#endregion
@@ -200,32 +203,32 @@ namespace Freya {
 		/// <summary>Extends the boundary of this box to encapsulate a point</summary>
 		/// <param name="point">The point to encapsulate</param>
 		public void Encapsulate( Vector2 point ) {
-			float minX = Min( center.x - extents.x, point.x );
-			float minY = Min( center.y - extents.y, point.y );
-			float maxX = Max( center.x + extents.x, point.x );
-			float maxY = Max( center.y + extents.y, point.y );
-			center.x = ( maxX + minX ) / 2;
-			center.y = ( maxY + minY ) / 2;
-			extents.x = ( maxX - minX ) / 2;
-			extents.y = ( maxY - minY ) / 2;
+			float minX = Min( center.X - extents.X, point.X );
+			float minY = Min( center.Y - extents.Y, point.Y );
+			float maxX = Max( center.X + extents.X, point.X );
+			float maxY = Max( center.Y + extents.Y, point.Y );
+			center.X = ( maxX + minX ) / 2;
+			center.Y = ( maxY + minY ) / 2;
+			extents.X = ( maxX - minX ) / 2;
+			extents.Y = ( maxY - minY ) / 2;
 		}
 	}
 
 	public partial struct Box3D {
 		/// <inheritdoc cref="Box2D.Encapsulate"/>
 		public void Encapsulate( Vector3 point ) {
-			float minX = Min( center.x - extents.x, point.x );
-			float minY = Min( center.y - extents.y, point.y );
-			float minZ = Min( center.z - extents.z, point.z );
-			float maxX = Max( center.x + extents.x, point.x );
-			float maxY = Max( center.y + extents.y, point.y );
-			float maxZ = Max( center.z + extents.z, point.z );
-			center.x = ( maxX + minX ) / 2;
-			center.y = ( maxY + minY ) / 2;
-			center.z = ( maxZ + minZ ) / 2;
-			extents.x = ( maxX - minX ) / 2;
-			extents.y = ( maxY - minY ) / 2;
-			extents.z = ( maxZ - minZ ) / 2;
+			float minX = Min( center.X - extents.X, point.X );
+			float minY = Min( center.Y - extents.Y, point.Y );
+			float minZ = Min( center.Z - extents.Z, point.Z );
+			float maxX = Max( center.X + extents.X, point.X );
+			float maxY = Max( center.Y + extents.Y, point.Y );
+			float maxZ = Max( center.Z + extents.Z, point.Z );
+			center.X = ( maxX + minX ) / 2;
+			center.Y = ( maxY + minY ) / 2;
+			center.Z = ( maxZ + minZ ) / 2;
+			extents.X = ( maxX - minX ) / 2;
+			extents.Y = ( maxY - minY ) / 2;
+			extents.Z = ( maxZ - minZ ) / 2;
 		}
 	}
 
@@ -238,8 +241,8 @@ namespace Freya {
 		/// <param name="point">The point to get the closest corner to</param>
 		public Vector2 ClosestCorner( Vector2 point ) =>
 			new Vector2(
-				center.x + Sign( point.x - center.x ) * extents.x,
-				center.y + Sign( point.y - center.y ) * extents.y
+				center.X + Sign( point.X - center.X ) * extents.X,
+				center.Y + Sign( point.Y - center.Y ) * extents.Y
 			);
 	}
 
@@ -247,9 +250,9 @@ namespace Freya {
 		/// <inheritdoc cref="Box2D.ClosestCorner"/>
 		public Vector3 ClosestCorner( Vector3 point ) =>
 			new Vector3(
-				center.x + Sign( point.x - center.x ) * extents.x,
-				center.y + Sign( point.y - center.y ) * extents.y,
-				center.z + Sign( point.z - center.z ) * extents.z
+				center.X + Sign( point.X - center.X ) * extents.X,
+				center.Y + Sign( point.Y - center.Y ) * extents.Y,
+				center.Z + Sign( point.Z - center.Z ) * extents.Z
 			);
 	}
 
@@ -263,8 +266,8 @@ namespace Freya {
 		/// <param name="point">The point to get the closest point to</param>
 		[MethodImpl( INLINE )] public Vector2 ClosestPointInside( Vector2 point ) =>
 			new Vector2(
-				point.x.Clamp( center.x - extents.x, center.x + extents.x ),
-				point.y.Clamp( center.y - extents.y, center.y + extents.y )
+				point.X.Clamp( center.X - extents.X, center.X + extents.X ),
+				point.Y.Clamp( center.Y - extents.Y, center.Y + extents.Y )
 			);
 	}
 
@@ -272,9 +275,9 @@ namespace Freya {
 		/// <inheritdoc cref="Box2D.ClosestPointInside"/>
 		[MethodImpl( INLINE )] public Vector3 ClosestPointInside( Vector3 point ) =>
 			new Vector3(
-				point.x.Clamp( center.x - extents.x, center.x + extents.x ),
-				point.y.Clamp( center.y - extents.y, center.y + extents.y ),
-				point.z.Clamp( center.z - extents.z, center.z + extents.z )
+				point.X.Clamp( center.X - extents.X, center.X + extents.X ),
+				point.Y.Clamp( center.Y - extents.Y, center.Y + extents.Y ),
+				point.Z.Clamp( center.Z - extents.Z, center.Z + extents.Z )
 			);
 	}
 
@@ -286,17 +289,17 @@ namespace Freya {
 		/// <summary>Projects a point onto the boundary of this box. Points inside will be pushed out to the boundary</summary>
 		/// <param name="point">The point to project onto the box boundary</param>
 		[MethodImpl( INLINE )] public Vector2 ClosestPointOnBoundary( Vector2 point ) {
-			float px = point.x - center.x;
-			float py = point.y - center.y;
+			float px = point.X - center.X;
+			float py = point.Y - center.Y;
 			float ax = Abs( px );
 			float ay = Abs( py );
-			float dx = ax - extents.x;
-			float dy = ay - extents.y;
+			float dx = ax - extents.X;
+			float dy = ay - extents.Y;
 			bool caseX = dy <= dx;
 			bool caseY = caseX == false;
 			return new Vector2(
-				center.x + Sign( px ) * ( caseX ? extents.x : ax.AtMost( extents.x ) ),
-				center.y + Sign( py ) * ( caseY ? extents.y : ay.AtMost( extents.y ) )
+				center.X + Sign( px ) * ( caseX ? extents.X : ax.AtMost( extents.X ) ),
+				center.Y + Sign( py ) * ( caseY ? extents.Y : ay.AtMost( extents.Y ) )
 			);
 		}
 	}
@@ -304,22 +307,22 @@ namespace Freya {
 	public partial struct Box3D {
 		/// <inheritdoc cref="Box2D.ClosestPointOnBoundary"/>
 		[MethodImpl( INLINE )] public Vector3 ClosestPointOnBoundary( Vector3 point ) {
-			float px = point.x - center.x;
-			float py = point.y - center.y;
-			float pz = point.z - center.z;
+			float px = point.X - center.X;
+			float py = point.Y - center.Y;
+			float pz = point.Z - center.Z;
 			float ax = Abs( px );
 			float ay = Abs( py );
 			float az = Abs( pz );
-			float dx = ax - extents.x;
-			float dy = ay - extents.y;
-			float dz = az - extents.z;
+			float dx = ax - extents.X;
+			float dy = ay - extents.Y;
+			float dz = az - extents.Z;
 			bool caseX = dz <= dx && dy <= dx;
 			bool caseY = caseX == false && dx <= dy && dz <= dy;
 			bool caseZ = caseX == false && caseY == false;
 			return new Vector3(
-				center.x + Sign( px ) * ( caseX ? extents.x : ax.AtMost( extents.x ) ),
-				center.y + Sign( py ) * ( caseY ? extents.y : ay.AtMost( extents.y ) ),
-				center.z + Sign( pz ) * ( caseZ ? extents.z : az.AtMost( extents.z ) )
+				center.X + Sign( px ) * ( caseX ? extents.X : ax.AtMost( extents.X ) ),
+				center.Y + Sign( py ) * ( caseY ? extents.Y : ay.AtMost( extents.Y ) ),
+				center.Z + Sign( pz ) * ( caseZ ? extents.Z : az.AtMost( extents.Z ) )
 			);
 		}
 	}

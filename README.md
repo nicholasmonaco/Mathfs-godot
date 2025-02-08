@@ -1,24 +1,15 @@
 # Mathfs
-Freya's expanded math functionality for Unity!
-- This is primarily a way for me to share the math functionality I write and use in my own personal projects
-- I will recklessly edit and adapt things without too much thought into backwards compatibility
-- Minimum Unity version is currently 2021.2 due to using newer C# version features. It may be possible to auto-downgrade through your IDE if necessary
-- Commits with version tags should be relatively stable. Other commits may not be
+Freya's expanded math functionality for Unity, brought to Godot!
+- This is primarily a way to use and share Freya's awesome math stuff to Godot users
+- I will also recklessly edit and adapt things without too much thought into backwards compatibility
+- Minimum Godot version is currently 4.3. It may be possible to downgrade, but below 4 is completely untested
 
 ## Installation instructions
 
 There are several ways to install this library into your project:
 
 - **Plain install**
-   - Clone or [download](https://github.com/FreyaHolmer/Mathfs/archive/refs/heads/master.zip) this repository and put it somewhere in the Assets folder of your Unity project
-- **Unity Package Manager (UPM)**:
-   - Add either of the the following lines to *Packages/manifest.json*:
-   - `"com.acegikmo.mathfs": "https://github.com/FreyaHolmer/Mathfs.git#0.1.0",` if you want to target a specific version (recommended)
-   - `"com.acegikmo.mathfs": "https://github.com/FreyaHolmer/Mathfs.git",` if you want to pull the latest commit (potentially unstable)
-   - More information about UPM and git [here](https://docs.unity3d.com/Manual/upm-git.html)
-- **[OpenUPM](https://openupm.com)**
-   - After installing [openupm-cli](https://github.com/openupm/openupm-cli), run the following command:
-   - `openupm add com.acegikmo.mathfs`
+   - Clone or [download](https://github.com/FreyaHolmer/Mathfs/archive/refs/heads/master.zip) this repository and put it somewhere in the addons folder of your project
 
 After installation you will be able to access the library in scripts by including the namespace `using Freya`
 
@@ -75,7 +66,7 @@ After installation you will be able to access the library in scripts by includin
  - And more!
 
 ## Changes
-Mathfs.cs **does not fully match Unity's Mathf.cs**, I've made a few changes:
+Mathfs.cs **differs a bit from common/standard Math functions (specifically, Unity's)**:
  - All angles are in radians, no methods use degrees
  - Lerp and InverseLerp:
    - Unclamped by default

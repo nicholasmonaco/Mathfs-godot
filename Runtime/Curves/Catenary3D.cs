@@ -1,6 +1,7 @@
 // by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
-using UnityEngine;
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
 
 namespace Freya {
 
@@ -50,7 +51,7 @@ namespace Freya {
 		/// <param name="length">The length of the curve. note: has to be equal or longer than the distance between the points</param>
 		/// <param name="slackDirection">The direction of "gravity" for the arc</param>
 		public Catenary3D( Vector3 p0, Vector3 p1, float length, Vector3 slackDirection ) {
-			cat2D = new CatenaryToPoint( p1 - p0, length );
+			cat2D = new CatenaryToPoint( (p1 - p0).ToVector2(), length );
 			space.axisX = default; // set on first evaluation by RotateAroundYToInclude
 			( space.origin, space.axisY, this.p1 ) = ( p0, -slackDirection, p1 );
 			evaluability = Evaluability.NotReady;

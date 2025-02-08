@@ -2,7 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+using Rect = Godot.Rect2;
+
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -38,7 +41,7 @@ namespace Freya {
 				for( int i = 0; i < count; i++ ) {
 					Vector2 a = points[i];
 					Vector2 b = points[( i + 1 ) % count];
-					sum += ( b.x - a.x ) * ( b.y + a.y );
+					sum += ( b.X - a.X ) * ( b.Y + a.Y );
 				}
 
 				return sum * 0.5f;
@@ -53,8 +56,8 @@ namespace Freya {
 				for( int i = 0; i < count; i++ ) {
 					Vector2 a = points[i];
 					Vector2 b = points[( i + 1 ) % count];
-					float dx = a.x - b.x;
-					float dy = a.y - b.y;
+					float dx = a.X - b.X;
+					float dy = a.Y - b.Y;
 					totalDist += MathF.Sqrt( dx * dx + dy * dy ); // unrolled for speed
 				}
 
@@ -67,13 +70,13 @@ namespace Freya {
 			get {
 				int count = points.Count;
 				Vector2 p = points[0];
-				float xMin = p.x, xMax = p.x, yMin = p.y, yMax = p.y;
+				float xMin = p.X, xMax = p.X, yMin = p.Y, yMax = p.Y;
 				for( int i = 1; i < count; i++ ) {
 					p = points[i];
-					xMin = MathF.Min( xMin, p.x );
-					xMax = MathF.Max( xMax, p.x );
-					yMin = MathF.Min( yMin, p.y );
-					yMax = MathF.Max( yMax, p.y );
+					xMin = MathF.Min( xMin, p.X );
+					xMax = MathF.Max( xMax, p.X );
+					yMin = MathF.Min( yMin, p.Y );
+					yMax = MathF.Max( yMax, p.Y );
 				}
 
 				return new Rect( xMin, yMin, xMax - xMin, yMax - yMin );
@@ -96,11 +99,11 @@ namespace Freya {
 			int count = points.Count;
 			for( int i = 0; i < count; i++ ) {
 				int iNext = ( i + 1 ) % count;
-				if( points[i].y <= point.y ) {
-					if( points[iNext].y > point.y && IsLeft( points[i], points[iNext], point ) > 0 )
+				if( points[i].Y <= point.Y ) {
+					if( points[iNext].Y > point.Y && IsLeft( points[i], points[iNext], point ) > 0 )
 						winding--;
 				} else {
-					if( points[iNext].y <= point.y && IsLeft( points[i], points[iNext], point ) < 0 )
+					if( points[iNext].Y <= point.Y && IsLeft( points[i], points[iNext], point ) < 0 )
 						winding++;
 				}
 			}
@@ -117,7 +120,7 @@ namespace Freya {
 			List<Vector2> miterPts = new List<Vector2>();
 
 			Line2D GetMiterLine( int i ) {
-				Vector2 tangent = ( this[i + 1] - this[i] ).normalized;
+				Vector2 tangent = ( this[i + 1] - this[i] ).Normalized();
 				Vector2 normal = tangent.Rotate90CCW();
 				return new Line2D( this[i] + normal * offset, tangent );
 			}
@@ -129,7 +132,7 @@ namespace Freya {
 				if( line.Intersect( line2, out Vector2 pt ) )
 					miterPts.Add( pt );
 				else {
-					Debug.LogError( $"{line.origin},{line.dir}\n{line2.origin},{line2.dir}\nPoints:{string.Join( '\n', points )}" );
+					Godot.GD.PrintErr( $"{line.origin},{line.dir}\n{line2.origin},{line2.dir}\nPoints:{string.Join( '\n', points )}" );
 					throw new Exception( "Line intersection failed" );
 				}
 				// prev = line;
@@ -142,15 +145,15 @@ namespace Freya {
 		/// <summary>The centroid of this polygon, also known as the center of mass</summary>
 		public Vector2 Centroid {
 			get {
-				Vector2 centroid = Vector2.zero;
+				Vector2 centroid = Vector2.Zero;
 				float signedArea = 0;
 				for( int i = 0; i < Count; i++ ) {
 					Vector2 a = points[i];
 					Vector2 b = points[( i + 1 ) % Count];
-					float det = a.x * b.y - b.x * a.y;
+					float det = a.X * b.Y - b.X * a.Y;
 					signedArea += det;
-					centroid.x += ( a.x + b.x ) * det;
-					centroid.y += ( b.y + a.y ) * det;
+					centroid.X += ( a.X + b.X ) * det;
+					centroid.Y += ( b.Y + a.Y ) * det;
 				}
 				return centroid / ( 3 * signedArea );
 			}
@@ -158,12 +161,12 @@ namespace Freya {
 
 		public Vector2 WeightedEdgeCenter {
 			get {
-				Vector2 eCenter = Vector2.zero;
+				Vector2 eCenter = Vector2.Zero;
 				float totalLength = 0;
 				for( int i = 0; i < Count; i++ ) {
 					Vector2 a = points[i];
 					Vector2 b = points[( i + 1 ) % Count];
-					float length = Vector2.Distance( a, b );
+					float length = a.DistanceTo( b );
 					totalLength += length;
 					eCenter += ( a + b ) * length;
 				}

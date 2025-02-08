@@ -2,7 +2,10 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
+
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -100,7 +103,7 @@ namespace Freya {
 		/// <param name="point">The point to project</param>
 		public Vector2 ProjectPoint( Vector2 point ) {
 			Vector2 v = point - center;
-			float mag = v.magnitude;
+			float mag = v.Length();
 			return center + v * ( radius / mag );
 		}
 	}
@@ -109,8 +112,8 @@ namespace Freya {
 		/// <inheritdoc cref="Circle2D.ProjectPoint"/>
 		public Vector3 ProjectPoint( Vector3 point ) {
 			Vector3 v = point - center;
-			Vector3 flattened = v - Vector3.Dot( v, normal ) * normal;
-			float mag = flattened.magnitude;
+			Vector3 flattened = v - v.Dot( normal ) * normal;
+			float mag = flattened.Length();
 			return center + flattened * ( radius / mag );
 		}
 	}
@@ -123,8 +126,8 @@ namespace Freya {
 		/// <summary>Returns whether or not the point is inside the circle</summary>
 		/// <param name="point">The point to check if it's inside or outside</param>
 		[MethodImpl( INLINE )] public bool Contains( Vector2 point ) {
-			float dx = point.x - center.x;
-			float dy = point.y - center.y;
+			float dx = point.X - center.X;
+			float dy = point.Y - center.Y;
 			return dx * dx + dy * dy <= radius * radius;
 		}
 	}
@@ -137,7 +140,7 @@ namespace Freya {
 		/// <summary>Returns the smallest possible circle passing through two points</summary>
 		/// <param name="a">The first point in the circle</param>
 		/// <param name="b">The second point in the circle</param>
-		[MethodImpl( INLINE )] public static Circle2D FromTwoPoints( Vector2 a, Vector2 b ) => new Circle2D( ( a + b ) / 2f, Vector2.Distance( a, b ) / 2f );
+		[MethodImpl( INLINE )] public static Circle2D FromTwoPoints( Vector2 a, Vector2 b ) => new Circle2D( ( a + b ) / 2f, a.DistanceTo( b ) / 2f );
 	}
 
 	#endregion
@@ -154,7 +157,7 @@ namespace Freya {
 			Line2D lineA = LineSegment2D.GetBisector( a, b );
 			Line2D lineB = LineSegment2D.GetBisector( b, c );
 			if( lineA.Intersect( lineB, out circle.center ) ) {
-				circle.radius = Vector2.Distance( circle.center, a );
+				circle.radius = circle.center.DistanceTo( a );
 				return true;
 			}
 
@@ -176,14 +179,14 @@ namespace Freya {
 			Vector3 bRel = b - a;
 			( Vector3 xAxis, float bx2D ) = bRel.GetDirAndMagnitude();
 			Vector3 cRel = c - a;
-			Vector3 normal = Vector3.Cross( bRel, cRel ).normalized;
-			Vector3 yAxis = Vector3.Cross( normal, xAxis );
+			Vector3 normal = bRel.Cross( cRel ).Normalized();
+			Vector3 yAxis = normal.Cross( xAxis );
 
 			Vector2 b2D = new Vector2( bx2D, 0 );
-			Vector2 c2D = new Vector2( Vector3.Dot( xAxis, cRel ), Vector3.Dot( yAxis, cRel ) );
+			Vector2 c2D = new Vector2( xAxis.Dot( cRel ), yAxis.Dot( cRel ) );
 
 			if( Circle2D.FromThreePoints( default, b2D, c2D, out Circle2D circle2D ) ) {
-				Vector3 origin = xAxis * circle2D.center.x + yAxis * circle2D.center.y;
+				Vector3 origin = xAxis * circle2D.center.X + yAxis * circle2D.center.Y;
 				circle = new Circle3D( a + origin, normal, circle2D.radius );
 				return true;
 			}
@@ -209,7 +212,7 @@ namespace Freya {
 			Line2D lineA = new Line2D( startPt, startTangent.Rotate90CW() );
 			Line2D lineB = LineSegment2D.GetBisector( startPt, endPt );
 			if( lineA.Intersect( lineB, out Vector2 pt ) ) {
-				circle = new Circle2D( pt, Vector2.Distance( pt, startPt ) );
+				circle = new Circle2D( pt, pt.DistanceTo( startPt ) );
 				return true;
 			}
 
@@ -224,15 +227,15 @@ namespace Freya {
 		public static bool FromPointTangentPoint( Vector3 startPt, Vector3 startTangent, Vector3 endPt, out Circle3D circle ) {
 			Vector3 delta = endPt - startPt;
 			( Vector3 xAxis, float d ) = delta.GetDirAndMagnitude();
-			if( Vector3.Dot( xAxis, startTangent ).Abs() < 0.9999f ) {
+			if( xAxis.Dot( startTangent ).Abs() < 0.9999f ) {
 				float h = d / 2;
 				float ang = AngleBetween( xAxis, startTangent );
 				float fh = h * MathF.Tan( ang + TAU / 4 );
 				float x2D = h;
 				float y2D = fh;
 				float r = MathF.Sqrt( h * h + fh * fh );
-				Vector3 normal = Vector3.Cross( xAxis, startTangent ).normalized;
-				Vector3 yAxis = Vector3.Cross( normal, xAxis );
+				Vector3 normal = xAxis.Cross( startTangent ).Normalized();
+				Vector3 yAxis = normal.Cross( xAxis );
 				Vector3 center = startPt + xAxis * x2D + yAxis * y2D;
 				circle = new Circle3D( center, normal, r );
 				return true;
@@ -303,7 +306,7 @@ namespace Freya {
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
 		[MethodImpl( INLINE )] public static Circle2D GetOsculatingCircle( Vector2 point, Vector2 velocity, Vector2 acceleration ) {
 			float curvature = GetCurvature( velocity, acceleration );
-			Vector2 tangent = velocity.normalized;
+			Vector2 tangent = velocity.Normalized();
 			Vector2 normal = tangent.Rotate90CCW();
 			float signedRadius = 1f / curvature;
 			return new Circle2D( point + normal * signedRadius, Abs( signedRadius ) );
@@ -320,7 +323,7 @@ namespace Freya {
 		public static Circle3D GetOsculatingCircle( Vector3 point, Vector3 velocity, Vector3 acceleration ) {
 			Bivector3 curvatureBivector = GetCurvature( velocity, acceleration );
 			( Vector3 axis, float curvature ) = curvatureBivector.GetNormalAndArea();
-			Vector3 normal = Vector3.Cross( velocity, Vector3.Cross( acceleration, velocity ) ).normalized;
+			Vector3 normal = velocity.Cross( acceleration.Cross( velocity ) ).Normalized();
 			float signedRadius = 1f / curvature;
 			return new Circle3D( point + normal * signedRadius, axis, Abs( signedRadius ) );
 		}

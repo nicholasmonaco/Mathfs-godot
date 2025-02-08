@@ -1,6 +1,6 @@
 // by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
-using UnityEngine;
+using Vector3 = Godot.Vector3;
 
 namespace Freya {
 
@@ -22,7 +22,7 @@ namespace Freya {
 
 		public Plane3D( Vector3 normal, Vector3 point ) {
 			this.normal = normal;
-			this.distance = Vector3.Dot( normal, point );
+			this.distance = normal.Dot( point );
 		}
 
 		// public static Line3D Intersect( Plane3D a, Plane3D b ) {

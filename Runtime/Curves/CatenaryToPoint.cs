@@ -1,5 +1,6 @@
 using System;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
 
 namespace Freya {
 
@@ -50,8 +51,8 @@ namespace Freya {
 			}
 		}
 
-		public bool IsVertical => MathF.Abs( p.x ) < 0.001f;
-		public bool IsStraightLine => s <= p.magnitude * 1.00005f;
+		public bool IsVertical => MathF.Abs( p.X ) < 0.001f;
+		public bool IsStraightLine => s <= p.Length() * 1.00005f;
 
 		/// <summary>Evaluates a position on this catenary curve at the given arc length of <c>sEval</c></summary>
 		/// <param name="sEval">The arc length along the curve to sample, relative to the first point</param>
@@ -67,8 +68,8 @@ namespace Freya {
 				},
 				_ => evaluability switch {
 					Evaluability.Catenary       => EvalCatDerivByArcLength( sEval, nthDerivative ),
-					Evaluability.LineSegment    => nthDerivative == 1 ? p.normalized : Vector2.zero,
-					Evaluability.LinearVertical => new Vector2( 0, nthDerivative == 1 ? ( sEval < -( p.y - s ) / 2 ? -1 : 1 ) : 0 ),
+					Evaluability.LineSegment    => nthDerivative == 1 ? p.Normalized() : Vector2.Zero,
+					Evaluability.LinearVertical => new Vector2( 0, nthDerivative == 1 ? ( sEval < -( p.Y - s ) / 2 ? -1 : 1 ) : 0 ),
 					Evaluability.Unknown or _   => throw new Exception( "Failed to evaluate catenary, couldn't calculate evaluability" )
 				}
 			};
@@ -79,8 +80,8 @@ namespace Freya {
 
 		// almost completely vertical line when p0.x is approx. equal to p1.x
 		Vector2 EvalVerticalLinearApproxByArcLength( float sEval ) {
-			float x = Mathfs.Lerp( 0, p.x, sEval / s ); // just to make it not snap to x=0
-			float b = ( p.y - s ) / 2; // bottom
+			float x = Mathfs.Lerp( 0, p.X, sEval / s ); // just to make it not snap to x=0
+			float b = ( p.Y - s ) / 2; // bottom
 			float seg0 = -b;
 			float y = ( sEval < seg0 ) ? -sEval : -2 * seg0 + sEval;
 			return new Vector2( x, y );
@@ -88,8 +89,8 @@ namespace Freya {
 
 		// evaluates the position of the catenary at the given arc length, relative to the first point
 		Vector2 EvalCatPosByArcLength( float sEval ) {
-			sEval *= p.x.Sign(); // since we go backwards when p0.x < p1.x
-			float x = Catenary.EvalXByArcLength( sEval + arcLenSampleOffset, a ) + delta.x;
+			sEval *= p.X.Sign(); // since we go backwards when p0.x < p1.x
+			float x = Catenary.EvalXByArcLength( sEval + arcLenSampleOffset, a ) + delta.X;
 			float y = EvalPassingThrough0( x );
 			return new Vector2( x, y );
 		}
@@ -100,12 +101,12 @@ namespace Freya {
 		Vector2 EvalCatDerivByArcLength( float sEval, int n = 1 ) {
 			if( n == 0 )
 				return EvalCatPosByArcLength( sEval );
-			sEval *= p.x.Sign(); // since we go backwards when p0.x < p1.x
+			sEval *= p.X.Sign(); // since we go backwards when p0.x < p1.x
 			return Catenary.EvalDerivByArcLength( sEval + arcLenSampleOffset, a, n );
 		}
 
 		// Evaluate passing through the origin and p
-		float EvalPassingThrough0( float x ) => Catenary.Eval( x - delta.x, a ) + delta.y;
+		float EvalPassingThrough0( float x ) => Catenary.Eval( x - delta.X, a ) + delta.Y;
 
 		// calculates p, a, delta, arcLenSampleOffset, and which evaluation method to use
 		void ReadyForEvaluation() {
@@ -128,18 +129,18 @@ namespace Freya {
 
 			// CASE 3:
 			// Now we've got a catenary on our hands unless something explodes.
-			float c = MathF.Sqrt( s * s - p.y * p.y );
-			float pAbsX = p.x.Abs(); // solve only in x > 0
+			float c = MathF.Sqrt( s * s - p.Y * p.Y );
+			float pAbsX = p.X.Abs(); // solve only in x > 0
 
 			// find bounds of the root
-			float xRoot = ( p.x * p.x ) / ( 2 * s ); // intial guess based on freya's flawless heuristics
+			float xRoot = ( p.X * p.X ) / ( 2 * s ); // intial guess based on freya's flawless heuristics
 			if( TryFindRootBounds( pAbsX, c, xRoot, out FloatRange xRange ) ) {
 				// refine range, if necessary (which is very likely)
 				if( Mathfs.Approximately( xRange.Length, 0 ) == false )
 					RootFindBisections( pAbsX, c, ref xRange, BISECT_REFINE_COUNT ); // Catenary seems valid, with roots inside, refine the range
 				a = xRange.Center; // set a to the middle of the latest range
 				delta = CalcCatenaryDelta( a, p ); // find delta to pass through both points
-				arcLenSampleOffset = CalcArcLenSampleOffset( delta.x, a );
+				arcLenSampleOffset = CalcArcLenSampleOffset( delta.X, a );
 				evaluability = Evaluability.Catenary;
 			} else {
 				// CASE 4:
@@ -157,8 +158,8 @@ namespace Freya {
 		// Calculates the required offset to make a catenary pass through the origin and a point p
 		static Vector2 CalcCatenaryDelta( float a, Vector2 p ) {
 			Vector2 d;
-			d.x = p.x / 2 - a * Mathfs.Asinh( p.y / ( 2 * a * Mathfs.Sinh( p.x / ( 2 * a ) ) ) );
-			d.y = -Catenary.Eval( d.x, a ); // technically -d.x but because of symmetry d.x works too
+			d.X = p.X / 2 - a * Mathfs.Asinh( p.Y / ( 2 * a * Mathfs.Sinh( p.X / ( 2 * a ) ) ) );
+			d.Y = -Catenary.Eval( d.X, a ); // technically -d.x but because of symmetry d.x works too
 			return d;
 		}
 

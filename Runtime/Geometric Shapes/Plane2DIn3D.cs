@@ -1,13 +1,14 @@
-using UnityEngine;
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
 
 namespace Freya {
 
 	/// <summary>An oriented 2D plane embedded in 3D space</summary>
 	public struct Plane2DIn3D {
 
-		public static readonly Plane2DIn3D XY = new(default, Vector3.right, Vector3.up);
-		public static readonly Plane2DIn3D YZ = new(default, Vector3.up, Vector3.forward);
-		public static readonly Plane2DIn3D ZX = new(default, Vector3.forward, Vector3.right);
+		public static readonly Plane2DIn3D XY = new(default, Vector3.Right, Vector3.Up);
+		public static readonly Plane2DIn3D YZ = new(default, Vector3.Up, Vector3.Back);
+		public static readonly Plane2DIn3D ZX = new(default, Vector3.Back, Vector3.Right);
 
 		public Vector3 origin, axisX, axisY;
 
@@ -15,7 +16,7 @@ namespace Freya {
 		/// <param name="origin">The origin of the plane</param>
 		/// <param name="axisX">The x axis direction of the plane</param>
 		/// <param name="axisY">The y axis direction of the plane</param>
-		public Plane2DIn3D( Vector3 origin, Vector3 axisX, Vector3 axisY ) => ( this.origin, this.axisX, this.axisY ) = ( origin, axisX.normalized, axisY.normalized );
+		public Plane2DIn3D( Vector3 origin, Vector3 axisX, Vector3 axisY ) => ( this.origin, this.axisX, this.axisY ) = ( origin, axisX.Normalized(), axisY.Normalized() );
 
 		/// <summary>Rotates this plane around the Y axis, setting the X axis,
 		/// so that the given point <c>p</c> is in the plane where x > 0</summary>
@@ -23,9 +24,9 @@ namespace Freya {
 		/// <param name="pLocal">The included point in the 2D local space</param>
 		public void RotateAroundYToInclude( Vector3 p, out Vector2 pLocal ) {
 			Vector3 pRel = p - origin;
-			float yProj = Vector3.Dot( axisY, pRel );
-			axisX = ( pRel - axisY * yProj ).normalized;
-			float xProj = Vector3.Dot( axisX, pRel );
+			float yProj = axisY.Dot( pRel );
+			axisX = ( pRel - axisY * yProj ).Normalized();
+			float xProj = axisX.Dot( pRel );
 			pLocal = new Vector2( xProj, yProj );
 		}
 
@@ -33,9 +34,9 @@ namespace Freya {
 		/// <param name="pt">The local space point to transform</param>
 		public Vector3 TransformPoint( Vector2 pt ) {
 			return new( // unrolled for performance
-				origin.x + axisX.x * pt.x + axisY.x * pt.y,
-				origin.y + axisX.y * pt.x + axisY.y * pt.y,
-				origin.z + axisX.z * pt.x + axisY.z * pt.y
+				origin.X + axisX.X * pt.X + axisY.X * pt.Y,
+				origin.Y + axisX.Y * pt.X + axisY.Y * pt.Y,
+				origin.Z + axisX.Z * pt.X + axisY.Z * pt.Y
 			);
 		}
 
@@ -43,21 +44,21 @@ namespace Freya {
 		/// <param name="vec">The local space vector to transform</param>
 		public Vector3 TransformVector( Vector2 vec ) {
 			return new( // unrolled for performance
-				axisX.x * vec.x + axisY.x * vec.y,
-				axisX.y * vec.x + axisY.y * vec.y,
-				axisX.z * vec.x + axisY.z * vec.y
+				axisX.X * vec.X + axisY.X * vec.Y,
+				axisX.Y * vec.X + axisY.Y * vec.Y,
+				axisX.Z * vec.X + axisY.Z * vec.Y
 			);
 		}
 
 		/// <summary>Transform a 3D world space point to a local 2D point</summary>
 		/// <param name="pt">World space point</param>
 		public Vector2 InverseTransformPoint( Vector3 pt ) {
-			float rx = pt.x - origin.x;
-			float ry = pt.y - origin.y;
-			float rz = pt.z - origin.z;
+			float rx = pt.X - origin.X;
+			float ry = pt.Y - origin.Y;
+			float rz = pt.Z - origin.Z;
 			return new(
-				axisX.x * rx + axisX.y * ry + axisX.z * rz,
-				axisY.x * rx + axisY.y * ry + axisY.z * rz
+				axisX.X * rx + axisX.Y * ry + axisX.Z * rz,
+				axisY.X * rx + axisY.Y * ry + axisY.Z * rz
 			);
 		}
 
@@ -65,8 +66,8 @@ namespace Freya {
 		/// <param name="vec">World space vector</param>
 		public Vector2 InverseTransformVector( Vector3 vec ) {
 			return new(
-				axisX.x * vec.x + axisX.y * vec.y + axisX.z * vec.z,
-				axisY.x * vec.x + axisY.y * vec.y + axisY.z * vec.z
+				axisX.X * vec.X + axisX.Y * vec.Y + axisX.Z * vec.Z,
+				axisY.X * vec.X + axisY.Y * vec.Y + axisY.Z * vec.Z
 			);
 		}
 

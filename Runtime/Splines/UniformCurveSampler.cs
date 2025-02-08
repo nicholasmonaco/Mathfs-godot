@@ -1,6 +1,7 @@
 ﻿// by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
-using UnityEngine;
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
 
 namespace Freya {
 
@@ -66,7 +67,7 @@ namespace Freya {
 			cumulativeDistances[0] = 0;
 			for( int i = 1; i < resolution; i++ ) {
 				Vector2 pt = curve.Eval( paramInterval.Lerp( i / ( resolution - 1f ) ) );
-				cumulativeLength += Vector2.Distance( prevPt, pt );
+				cumulativeLength += prevPt.DistanceTo( pt );
 				cumulativeDistances[i] = cumulativeLength;
 				prevPt = pt;
 			}
@@ -83,7 +84,7 @@ namespace Freya {
 			cumulativeDistances[0] = 0;
 			for( int i = 1; i < resolution; i++ ) {
 				Vector3 pt = curve.Eval( paramInterval.Lerp( i / ( resolution - 1f ) ) );
-				cumulativeLength += Vector3.Distance( prevPt, pt );
+				cumulativeLength += prevPt.DistanceTo( pt );
 				cumulativeDistances[i] = cumulativeLength;
 				prevPt = pt;
 			}

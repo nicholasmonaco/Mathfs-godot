@@ -6,10 +6,21 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using Uei = UnityEngine.Internal;
 using System.Linq; // used for arbitrary count min/max functions, so it's safe and won't allocate garbage don't worry~
 using System.Runtime.CompilerServices;
+
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
+using Vector4 = Godot.Vector4;
+using Vector2Int = Godot.Vector2I;
+using Vector3Int = Godot.Vector3I;
+using Quaternion = Godot.Quaternion;
+
+using Color = Godot.Color;
+using Rect = Godot.Rect2;
+using Bounds = Godot.Aabb;
+
+using Ndot;
 
 namespace Freya {
 
@@ -54,13 +65,13 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static float Sqrt( float value ) => MathF.Sqrt( value );
 
 		/// <summary>Returns the square root of each component</summary>
-		[MethodImpl( INLINE )] public static Vector2 Sqrt( Vector2 v ) => new Vector2( Sqrt( v.x ), Sqrt( v.y ) );
+		[MethodImpl( INLINE )] public static Vector2 Sqrt( Vector2 v ) => new Vector2( Sqrt( v.X ), Sqrt( v.Y ) );
 
 		/// <inheritdoc cref="Mathfs.Sqrt(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3 Sqrt( Vector3 v ) => new Vector3( Sqrt( v.x ), Sqrt( v.y ), Sqrt( v.z ) );
+		[MethodImpl( INLINE )] public static Vector3 Sqrt( Vector3 v ) => new Vector3( Sqrt( v.X ), Sqrt( v.Y ), Sqrt( v.Z ) );
 
 		/// <inheritdoc cref="Mathfs.Sqrt(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector4 Sqrt( Vector4 v ) => new Vector4( Sqrt( v.x ), Sqrt( v.y ), Sqrt( v.z ), Sqrt( v.w ) );
+		[MethodImpl( INLINE )] public static Vector4 Sqrt( Vector4 v ) => new Vector4( Sqrt( v.X ), Sqrt( v.Y ), Sqrt( v.Z ), Sqrt( v.W ) );
 
 		/// <summary>Returns the cube root of the given value, properly handling negative values unlike Pow(v,1/3)</summary>
 		[MethodImpl( INLINE )] public static float Cbrt( float value ) => MathF.Cbrt( value );
@@ -158,7 +169,11 @@ namespace Freya {
 		#region Floating point shenanigans
 
 		/// <summary>A very small value, used for various floating point inaccuracy thresholds</summary>
-		public static readonly float Epsilon = UnityEngineInternal.MathfInternal.IsFlushToZeroEnabled ? UnityEngineInternal.MathfInternal.FloatMinNormal : UnityEngineInternal.MathfInternal.FloatMinDenormal;
+		public static readonly float Epsilon = Single.Epsilon;
+
+		public static readonly Vector2 Epsilon2 = new Vector2(Epsilon, Epsilon);
+		public static readonly Vector3 Epsilon3 = new Vector3(Epsilon, Epsilon, Epsilon);
+		public static readonly Vector4 Epsilon4 = new Vector4(Epsilon, Epsilon, Epsilon, Epsilon);
 
 		/// <summary>float.PositiveInfinity</summary>
 		public const float Infinity = float.PositiveInfinity;
@@ -173,16 +188,16 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static bool Approximately( float a, float b ) => Abs( b - a ) < Max( 0.000001f * Max( Abs( a ), Abs( b ) ), Epsilon * 8 );
 
 		/// <inheritdoc cref="Approximately(float,float)"/>
-		[MethodImpl( INLINE )] public static bool Approximately( Vector2 a, Vector2 b ) => Approximately( a.x, b.x ) && Approximately( a.y, b.y );
+		[MethodImpl( INLINE )] public static bool Approximately( Vector2 a, Vector2 b ) => Approximately( a.X, b.X ) && Approximately( a.Y, b.Y );
 
 		/// <inheritdoc cref="Approximately(float,float)"/>
-		[MethodImpl( INLINE )] public static bool Approximately( Vector3 a, Vector3 b ) => Approximately( a.x, b.x ) && Approximately( a.y, b.y ) && Approximately( a.z, b.z );
+		[MethodImpl( INLINE )] public static bool Approximately( Vector3 a, Vector3 b ) => Approximately( a.X, b.X ) && Approximately( a.Y, b.Y ) && Approximately( a.Z, b.Z );
 
 		/// <inheritdoc cref="Approximately(float,float)"/>
-		[MethodImpl( INLINE )] public static bool Approximately( Vector4 a, Vector4 b ) => Approximately( a.x, b.x ) && Approximately( a.y, b.y ) && Approximately( a.z, b.z ) && Approximately( a.w, b.w );
+		[MethodImpl( INLINE )] public static bool Approximately( Vector4 a, Vector4 b ) => Approximately( a.X, b.X ) && Approximately( a.Y, b.Y ) && Approximately( a.Z, b.Z ) && Approximately( a.W, b.W );
 
 		/// <inheritdoc cref="Approximately(float,float)"/>
-		[MethodImpl( INLINE )] public static bool Approximately( Color a, Color b ) => Approximately( a.r, b.r ) && Approximately( a.g, b.g ) && Approximately( a.b, b.b ) && Approximately( a.a, b.a );
+		[MethodImpl( INLINE )] public static bool Approximately( Color a, Color b ) => Approximately( a.R, b.R ) && Approximately( a.G, b.G ) && Approximately( a.B, b.B ) && Approximately( a.A, b.A );
 
 		#endregion
 
@@ -319,18 +334,18 @@ namespace Freya {
 		#region Geometric Algebra
 
 		/// <summary>Returns the wedge product between two vectors</summary>
-		public static float Wedge( Vector2 a, Vector2 b ) => a.x * b.y - a.y * b.x;
+		public static float Wedge( Vector2 a, Vector2 b ) => a.X * b.Y - a.Y * b.X;
 
 		/// <summary>Returns the wedge product between two vectors</summary>
 		public static Bivector3 Wedge( Vector3 a, Vector3 b ) =>
 			new Bivector3(
-				a.y * b.z - a.z * b.y,
-				a.z * b.x - a.x * b.z,
-				a.x * b.y - a.y * b.x
+				a.Y * b.Z - a.Z * b.Y,
+				a.Z * b.X - a.X * b.Z,
+				a.X * b.Y - a.Y * b.X
 			);
 
 		/// <summary>Returns the geometric product between two vectors</summary>
-		public static Rotor3 GeometricProduct( Vector3 a, Vector3 b ) => new Rotor3( Vector3.Dot( a, b ), Wedge( a, b ) );
+		public static Rotor3 GeometricProduct( Vector3 a, Vector3 b ) => new Rotor3( a.Dot( b ), Wedge( a, b ) );
 
 		#endregion
 
@@ -343,13 +358,13 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static int Abs( int value ) => Math.Abs( value );
 
 		/// <summary>Returns the absolute value, per component. Basically makes negative numbers positive</summary>
-		[MethodImpl( INLINE )] public static Vector2 Abs( Vector2 v ) => new Vector2( Abs( v.x ), Abs( v.y ) );
+		[MethodImpl( INLINE )] public static Vector2 Abs( Vector2 v ) => new Vector2( Abs( v.X ), Abs( v.Y ) );
 
 		/// <inheritdoc cref="Mathfs.Abs(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3 Abs( Vector3 v ) => new Vector3( Abs( v.x ), Abs( v.y ), Abs( v.z ) );
+		[MethodImpl( INLINE )] public static Vector3 Abs( Vector3 v ) => new Vector3( Abs( v.X ), Abs( v.Y ), Abs( v.Z ) );
 
 		/// <inheritdoc cref="Mathfs.Abs(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector4 Abs( Vector4 v ) => new Vector4( Abs( v.x ), Abs( v.y ), Abs( v.z ), Abs( v.w ) );
+		[MethodImpl( INLINE )] public static Vector4 Abs( Vector4 v ) => new Vector4( Abs( v.X ), Abs( v.Y ), Abs( v.Z ), Abs( v.W ) );
 
 		#endregion
 
@@ -364,25 +379,25 @@ namespace Freya {
 		/// <summary>Clamps each component between <c>min</c> and <c>max</c></summary>
 		public static Vector2 Clamp( Vector2 v, Vector2 min, Vector2 max ) =>
 			new Vector2(
-				v.x < min.x ? min.x : v.x > max.x ? max.x : v.x,
-				v.y < min.y ? min.y : v.y > max.y ? max.y : v.y
+				v.X < min.X ? min.X : v.X > max.X ? max.X : v.X,
+				v.Y < min.Y ? min.Y : v.Y > max.Y ? max.Y : v.Y
 			);
 
 		/// <inheritdoc cref="Mathfs.Clamp(Vector2,Vector2,Vector2)"/>
 		public static Vector3 Clamp( Vector3 v, Vector3 min, Vector3 max ) =>
 			new Vector3(
-				v.x < min.x ? min.x : v.x > max.x ? max.x : v.x,
-				v.y < min.y ? min.y : v.y > max.y ? max.y : v.y,
-				v.z < min.z ? min.z : v.z > max.z ? max.z : v.z
+				v.X < min.X ? min.X : v.X > max.X ? max.X : v.X,
+				v.Y < min.Y ? min.Y : v.Y > max.Y ? max.Y : v.Y,
+				v.Z < min.Z ? min.Z : v.Z > max.Z ? max.Z : v.Z
 			);
 
 		/// <inheritdoc cref="Mathfs.Clamp(Vector2,Vector2,Vector2)"/>
 		public static Vector4 Clamp( Vector4 v, Vector4 min, Vector4 max ) =>
 			new Vector4(
-				v.x < min.x ? min.x : v.x > max.x ? max.x : v.x,
-				v.y < min.y ? min.y : v.y > max.y ? max.y : v.y,
-				v.z < min.z ? min.z : v.z > max.z ? max.z : v.z,
-				v.w < min.w ? min.w : v.w > max.w ? max.w : v.w
+				v.X < min.X ? min.X : v.X > max.X ? max.X : v.X,
+				v.Y < min.Y ? min.Y : v.Y > max.Y ? max.Y : v.Y,
+				v.Z < min.Z ? min.Z : v.Z > max.Z ? max.Z : v.Z,
+				v.W < min.W ? min.W : v.W > max.W ? max.W : v.W
 			);
 
 		/// <inheritdoc cref="Mathfs.Clamp(float,float,float)"/>
@@ -397,25 +412,25 @@ namespace Freya {
 		/// <summary>Clamps each component between 0 and 1</summary>
 		public static Vector2 Clamp01( Vector2 v ) =>
 			new Vector2(
-				v.x < 0f ? 0f : v.x > 1f ? 1f : v.x,
-				v.y < 0f ? 0f : v.y > 1f ? 1f : v.y
+				v.X < 0f ? 0f : v.X > 1f ? 1f : v.X,
+				v.Y < 0f ? 0f : v.Y > 1f ? 1f : v.Y
 			);
 
 		/// <inheritdoc cref="Mathfs.Clamp01(Vector2)"/>
 		public static Vector3 Clamp01( Vector3 v ) =>
 			new Vector3(
-				v.x < 0f ? 0f : v.x > 1f ? 1f : v.x,
-				v.y < 0f ? 0f : v.y > 1f ? 1f : v.y,
-				v.z < 0f ? 0f : v.z > 1f ? 1f : v.z
+				v.X < 0f ? 0f : v.X > 1f ? 1f : v.X,
+				v.Y < 0f ? 0f : v.Y > 1f ? 1f : v.Y,
+				v.Z < 0f ? 0f : v.Z > 1f ? 1f : v.Z
 			);
 
 		/// <inheritdoc cref="Mathfs.Clamp01(Vector2)"/>
 		public static Vector4 Clamp01( Vector4 v ) =>
 			new Vector4(
-				v.x < 0f ? 0f : v.x > 1f ? 1f : v.x,
-				v.y < 0f ? 0f : v.y > 1f ? 1f : v.y,
-				v.z < 0f ? 0f : v.z > 1f ? 1f : v.z,
-				v.w < 0f ? 0f : v.w > 1f ? 1f : v.w
+				v.X < 0f ? 0f : v.X > 1f ? 1f : v.X,
+				v.Y < 0f ? 0f : v.Y > 1f ? 1f : v.Y,
+				v.Z < 0f ? 0f : v.Z > 1f ? 1f : v.Z,
+				v.W < 0f ? 0f : v.W > 1f ? 1f : v.W
 			);
 
 		/// <summary>Clamps the value between -1 and 1</summary>
@@ -427,25 +442,25 @@ namespace Freya {
 		/// <summary>Clamps each component between -1 and 1</summary>
 		public static Vector2 ClampNeg1to1( Vector2 v ) =>
 			new Vector2(
-				v.x < -1f ? -1f : v.x > 1f ? 1f : v.x,
-				v.y < -1f ? -1f : v.y > 1f ? 1f : v.y
+				v.X < -1f ? -1f : v.X > 1f ? 1f : v.X,
+				v.Y < -1f ? -1f : v.Y > 1f ? 1f : v.Y
 			);
 
 		/// <summary>Clamps each component between -1 and 1</summary>
 		public static Vector3 ClampNeg1to1( Vector3 v ) =>
 			new Vector3(
-				v.x < -1f ? -1f : v.x > 1f ? 1f : v.x,
-				v.y < -1f ? -1f : v.y > 1f ? 1f : v.y,
-				v.z < -1f ? -1f : v.z > 1f ? 1f : v.z
+				v.X < -1f ? -1f : v.X > 1f ? 1f : v.X,
+				v.Y < -1f ? -1f : v.Y > 1f ? 1f : v.Y,
+				v.Z < -1f ? -1f : v.Z > 1f ? 1f : v.Z
 			);
 
 		/// <summary>Clamps each component between -1 and 1</summary>
 		public static Vector4 ClampNeg1to1( Vector4 v ) =>
 			new Vector4(
-				v.x < -1f ? -1f : v.x > 1f ? 1f : v.x,
-				v.y < -1f ? -1f : v.y > 1f ? 1f : v.y,
-				v.z < -1f ? -1f : v.z > 1f ? 1f : v.z,
-				v.w < -1f ? -1f : v.w > 1f ? 1f : v.w
+				v.X < -1f ? -1f : v.X > 1f ? 1f : v.X,
+				v.Y < -1f ? -1f : v.Y > 1f ? 1f : v.Y,
+				v.Z < -1f ? -1f : v.Z > 1f ? 1f : v.Z,
+				v.W < -1f ? -1f : v.W > 1f ? 1f : v.W
 			);
 
 		#endregion
@@ -501,22 +516,22 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static int Max( params int[] values ) => values.Max();
 
 		/// <summary>Returns the minimum value of all components in the vector</summary>
-		[MethodImpl( INLINE )] public static float Min( Vector2 v ) => Min( v.x, v.y );
+		[MethodImpl( INLINE )] public static float Min( Vector2 v ) => Min( v.X, v.Y );
 
 		/// <inheritdoc cref="Mathfs.Min(Vector2)"/>
-		[MethodImpl( INLINE )] public static float Min( Vector3 v ) => Min( v.x, v.y, v.z );
+		[MethodImpl( INLINE )] public static float Min( Vector3 v ) => Min( v.X, v.Y, v.Z );
 
 		/// <inheritdoc cref="Mathfs.Min(Vector2)"/>
-		[MethodImpl( INLINE )] public static float Min( Vector4 v ) => Min( v.x, v.y, v.z, v.w );
+		[MethodImpl( INLINE )] public static float Min( Vector4 v ) => Min( v.X, v.Y, v.Z, v.W );
 
 		/// <summary>Returns the maximum value of all components in the vector</summary>
-		[MethodImpl( INLINE )] public static float Max( Vector2 v ) => Max( v.x, v.y );
+		[MethodImpl( INLINE )] public static float Max( Vector2 v ) => Max( v.X, v.Y );
 
 		/// <inheritdoc cref="Mathfs.Max(Vector2)"/>
-		[MethodImpl( INLINE )] public static float Max( Vector3 v ) => Max( v.x, v.y, v.z );
+		[MethodImpl( INLINE )] public static float Max( Vector3 v ) => Max( v.X, v.Y, v.Z );
 
 		/// <inheritdoc cref="Mathfs.Max(Vector2)"/>
-		[MethodImpl( INLINE )] public static float Max( Vector4 v ) => Max( v.x, v.y, v.z, v.w );
+		[MethodImpl( INLINE )] public static float Max( Vector4 v ) => Max( v.X, v.Y, v.Z, v.W );
 
 		#endregion
 
@@ -526,13 +541,13 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static float Sign( float value ) => value >= 0f ? 1 : -1;
 
 		/// <summary>The sign of each component. Returns -1 if negative, returns 1 if greater than or equal to 0</summary>
-		[MethodImpl( INLINE )] public static Vector2 Sign( Vector2 value ) => new Vector2( value.x >= 0f ? 1 : -1, value.y >= 0f ? 1 : -1 );
+		[MethodImpl( INLINE )] public static Vector2 Sign( Vector2 value ) => new Vector2( value.X >= 0f ? 1 : -1, value.Y >= 0f ? 1 : -1 );
 
 		/// <inheritdoc cref="Mathfs.Sign(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3 Sign( Vector3 value ) => new Vector3( value.x >= 0f ? 1 : -1, value.y >= 0f ? 1 : -1, value.z >= 0f ? 1 : -1 );
+		[MethodImpl( INLINE )] public static Vector3 Sign( Vector3 value ) => new Vector3( value.X >= 0f ? 1 : -1, value.Y >= 0f ? 1 : -1, value.Z >= 0f ? 1 : -1 );
 
 		/// <inheritdoc cref="Mathfs.Sign(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector4 Sign( Vector4 value ) => new Vector4( value.x >= 0f ? 1 : -1, value.y >= 0f ? 1 : -1, value.z >= 0f ? 1 : -1, value.w >= 0f ? 1 : -1 );
+		[MethodImpl( INLINE )] public static Vector4 Sign( Vector4 value ) => new Vector4( value.X >= 0f ? 1 : -1, value.Y >= 0f ? 1 : -1, value.Z >= 0f ? 1 : -1, value.W >= 0f ? 1 : -1 );
 
 		/// <summary>Returns the sign of the value, either -1 if negative, or 1 if positive or 0</summary>
 		[MethodImpl( INLINE )] public static int Sign( int value ) => value >= 0 ? 1 : -1;
@@ -546,25 +561,25 @@ namespace Freya {
 		/// <summary>The sign of each component. Returns -1 if negative, return 0 if zero (or within the given threshold), returns 1 if positive</summary>
 		[MethodImpl( INLINE )] public static Vector2 SignWithZero( Vector2 value, float zeroThreshold = 0.000001f ) =>
 			new Vector2(
-				Abs( value.x ) < zeroThreshold ? 0 : Sign( value.x ),
-				Abs( value.y ) < zeroThreshold ? 0 : Sign( value.y )
+				Abs( value.X ) < zeroThreshold ? 0 : Sign( value.X ),
+				Abs( value.Y ) < zeroThreshold ? 0 : Sign( value.Y )
 			);
 
 		/// <inheritdoc cref="Mathfs.SignWithZero(Vector2,float)"/>
 		[MethodImpl( INLINE )] public static Vector3 SignWithZero( Vector3 value, float zeroThreshold = 0.000001f ) =>
 			new Vector3(
-				Abs( value.x ) < zeroThreshold ? 0 : Sign( value.x ),
-				Abs( value.y ) < zeroThreshold ? 0 : Sign( value.y ),
-				Abs( value.z ) < zeroThreshold ? 0 : Sign( value.z )
+				Abs( value.X ) < zeroThreshold ? 0 : Sign( value.X ),
+				Abs( value.Y ) < zeroThreshold ? 0 : Sign( value.Y ),
+				Abs( value.Z ) < zeroThreshold ? 0 : Sign( value.Z )
 			);
 
 		/// <inheritdoc cref="Mathfs.SignWithZero(Vector2,float)"/>
 		[MethodImpl( INLINE )] public static Vector4 SignWithZero( Vector4 value, float zeroThreshold = 0.000001f ) =>
 			new Vector4(
-				Abs( value.x ) < zeroThreshold ? 0 : Sign( value.x ),
-				Abs( value.y ) < zeroThreshold ? 0 : Sign( value.y ),
-				Abs( value.z ) < zeroThreshold ? 0 : Sign( value.z ),
-				Abs( value.w ) < zeroThreshold ? 0 : Sign( value.w )
+				Abs( value.X ) < zeroThreshold ? 0 : Sign( value.X ),
+				Abs( value.Y ) < zeroThreshold ? 0 : Sign( value.Y ),
+				Abs( value.Z ) < zeroThreshold ? 0 : Sign( value.Z ),
+				Abs( value.W ) < zeroThreshold ? 0 : Sign( value.W )
 			);
 
 		/// <summary>Returns the sign of the value, either -1 if negative, 0 if zero, 1 if positive</summary>
@@ -577,76 +592,76 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static float Floor( float value ) => MathF.Floor( value );
 
 		/// <summary>Rounds the vector components down to the nearest integer</summary>
-		[MethodImpl( INLINE )] public static Vector2 Floor( Vector2 value ) => new Vector2( MathF.Floor( value.x ), MathF.Floor( value.y ) );
+		[MethodImpl( INLINE )] public static Vector2 Floor( Vector2 value ) => new Vector2( MathF.Floor( value.X ), MathF.Floor( value.Y ) );
 
 		/// <inheritdoc cref="Mathfs.Floor(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3 Floor( Vector3 value ) => new Vector3( MathF.Floor( value.x ), MathF.Floor( value.y ), MathF.Floor( value.z ) );
+		[MethodImpl( INLINE )] public static Vector3 Floor( Vector3 value ) => new Vector3( MathF.Floor( value.X ), MathF.Floor( value.Y ), MathF.Floor( value.Z ) );
 
 		/// <inheritdoc cref="Mathfs.Floor(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector4 Floor( Vector4 value ) => new Vector4( MathF.Floor( value.x ), MathF.Floor( value.y ), MathF.Floor( value.z ), MathF.Floor( value.w ) );
+		[MethodImpl( INLINE )] public static Vector4 Floor( Vector4 value ) => new Vector4( MathF.Floor( value.X ), MathF.Floor( value.Y ), MathF.Floor( value.Z ), MathF.Floor( value.W ) );
 
 		/// <summary>Rounds the value down to the nearest integer, returning an int value</summary>
 		[MethodImpl( INLINE )] public static int FloorToInt( float value ) => (int)Math.Floor( value );
 
 		/// <summary>Rounds the vector components down to the nearest integer, returning an integer vector</summary>
-		[MethodImpl( INLINE )] public static Vector2Int FloorToInt( Vector2 value ) => new Vector2Int( (int)Math.Floor( value.x ), (int)Math.Floor( value.y ) );
+		[MethodImpl( INLINE )] public static Vector2Int FloorToInt( Vector2 value ) => new Vector2Int( (int)Math.Floor( value.X ), (int)Math.Floor( value.Y ) );
 
 		/// <inheritdoc cref="Mathfs.FloorToInt(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3Int FloorToInt( Vector3 value ) => new Vector3Int( (int)Math.Floor( value.x ), (int)Math.Floor( value.y ), (int)Math.Floor( value.z ) );
+		[MethodImpl( INLINE )] public static Vector3Int FloorToInt( Vector3 value ) => new Vector3Int( (int)Math.Floor( value.X ), (int)Math.Floor( value.Y ), (int)Math.Floor( value.Z ) );
 
 		/// <summary>Rounds the value up to the nearest integer</summary>
 		[MethodImpl( INLINE )] public static float Ceil( float value ) => MathF.Ceiling( value );
 
 		/// <summary>Rounds the vector components up to the nearest integer</summary>
-		[MethodImpl( INLINE )] public static Vector2 Ceil( Vector2 value ) => new Vector2( MathF.Ceiling( value.x ), MathF.Ceiling( value.y ) );
+		[MethodImpl( INLINE )] public static Vector2 Ceil( Vector2 value ) => new Vector2( MathF.Ceiling( value.X ), MathF.Ceiling( value.Y ) );
 
 		/// <inheritdoc cref="Mathfs.Ceil(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3 Ceil( Vector3 value ) => new Vector3( MathF.Ceiling( value.x ), MathF.Ceiling( value.y ), MathF.Ceiling( value.z ) );
+		[MethodImpl( INLINE )] public static Vector3 Ceil( Vector3 value ) => new Vector3( MathF.Ceiling( value.X ), MathF.Ceiling( value.Y ), MathF.Ceiling( value.Z ) );
 
 		/// <inheritdoc cref="Mathfs.Ceil(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector4 Ceil( Vector4 value ) => new Vector4( MathF.Ceiling( value.x ), MathF.Ceiling( value.y ), MathF.Ceiling( value.z ), MathF.Ceiling( value.w ) );
+		[MethodImpl( INLINE )] public static Vector4 Ceil( Vector4 value ) => new Vector4( MathF.Ceiling( value.X ), MathF.Ceiling( value.Y ), MathF.Ceiling( value.Z ), MathF.Ceiling( value.W ) );
 
 		/// <summary>Rounds the value up to the nearest integer, returning an int value</summary>
 		[MethodImpl( INLINE )] public static int CeilToInt( float value ) => (int)Math.Ceiling( value );
 
 		/// <summary>Rounds the vector components up to the nearest integer, returning an integer vector</summary>
-		[MethodImpl( INLINE )] public static Vector2Int CeilToInt( Vector2 value ) => new Vector2Int( (int)Math.Ceiling( value.x ), (int)Math.Ceiling( value.y ) );
+		[MethodImpl( INLINE )] public static Vector2Int CeilToInt( Vector2 value ) => new Vector2Int( (int)Math.Ceiling( value.X ), (int)Math.Ceiling( value.Y ) );
 
 		/// <inheritdoc cref="Mathfs.CeilToInt(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3Int CeilToInt( Vector3 value ) => new Vector3Int( (int)Math.Ceiling( value.x ), (int)Math.Ceiling( value.y ), (int)Math.Ceiling( value.z ) );
+		[MethodImpl( INLINE )] public static Vector3Int CeilToInt( Vector3 value ) => new Vector3Int( (int)Math.Ceiling( value.X ), (int)Math.Ceiling( value.Y ), (int)Math.Ceiling( value.Z ) );
 
 		/// <summary>Rounds the value to the nearest integer</summary>
 		[MethodImpl( INLINE )] public static float Round( float value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => (float)MathF.Round( value, midpointRounding );
 
 		/// <summary>Rounds the vector components to the nearest integer</summary>
-		[MethodImpl( INLINE )] public static Vector2 Round( Vector2 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector2( MathF.Round( value.x, midpointRounding ), MathF.Round( value.y, midpointRounding ) );
+		[MethodImpl( INLINE )] public static Vector2 Round( Vector2 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector2( MathF.Round( value.X, midpointRounding ), MathF.Round( value.Y, midpointRounding ) );
 
 		/// <inheritdoc cref="Mathfs.Round(Vector2,MidpointRounding)"/>
-		[MethodImpl( INLINE )] public static Vector3 Round( Vector3 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector3( MathF.Round( value.x, midpointRounding ), MathF.Round( value.y, midpointRounding ), MathF.Round( value.z, midpointRounding ) );
+		[MethodImpl( INLINE )] public static Vector3 Round( Vector3 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector3( MathF.Round( value.X, midpointRounding ), MathF.Round( value.Y, midpointRounding ), MathF.Round( value.Z, midpointRounding ) );
 
 		/// <inheritdoc cref="Mathfs.Round(Vector2,MidpointRounding)"/>
-		[MethodImpl( INLINE )] public static Vector4 Round( Vector4 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector4( MathF.Round( value.x, midpointRounding ), MathF.Round( value.y, midpointRounding ), MathF.Round( value.z, midpointRounding ), MathF.Round( value.w, midpointRounding ) );
+		[MethodImpl( INLINE )] public static Vector4 Round( Vector4 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector4( MathF.Round( value.X, midpointRounding ), MathF.Round( value.Y, midpointRounding ), MathF.Round( value.Z, midpointRounding ), MathF.Round( value.W, midpointRounding ) );
 
 		/// <summary>Rounds the value to the nearest value, snapped to the given interval size</summary>
 		[MethodImpl( INLINE )] public static float Round( float value, float snapInterval, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => MathF.Round( value / snapInterval, midpointRounding ) * snapInterval;
 
 		/// <summary>Rounds the vector components to the nearest value, snapped to the given interval size</summary>
-		[MethodImpl( INLINE )] public static Vector2 Round( Vector2 value, float snapInterval, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector2( Round( value.x, snapInterval, midpointRounding ), Round( value.y, snapInterval, midpointRounding ) );
+		[MethodImpl( INLINE )] public static Vector2 Round( Vector2 value, float snapInterval, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector2( Round( value.X, snapInterval, midpointRounding ), Round( value.Y, snapInterval, midpointRounding ) );
 
 		/// <inheritdoc cref="Mathfs.Round(Vector2,float,MidpointRounding)"/>
-		[MethodImpl( INLINE )] public static Vector3 Round( Vector3 value, float snapInterval, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector3( Round( value.x, snapInterval, midpointRounding ), Round( value.y, snapInterval, midpointRounding ), Round( value.z, snapInterval, midpointRounding ) );
+		[MethodImpl( INLINE )] public static Vector3 Round( Vector3 value, float snapInterval, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector3( Round( value.X, snapInterval, midpointRounding ), Round( value.Y, snapInterval, midpointRounding ), Round( value.Z, snapInterval, midpointRounding ) );
 
 		/// <inheritdoc cref="Mathfs.Round(Vector2,float,MidpointRounding)"/>
-		[MethodImpl( INLINE )] public static Vector4 Round( Vector4 value, float snapInterval, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector4( Round( value.x, snapInterval, midpointRounding ), Round( value.y, snapInterval, midpointRounding ), Round( value.z, snapInterval, midpointRounding ), Round( value.w, snapInterval, midpointRounding ) );
+		[MethodImpl( INLINE )] public static Vector4 Round( Vector4 value, float snapInterval, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector4( Round( value.X, snapInterval, midpointRounding ), Round( value.Y, snapInterval, midpointRounding ), Round( value.Z, snapInterval, midpointRounding ), Round( value.W, snapInterval, midpointRounding ) );
 
 		/// <summary>Rounds the value to the nearest integer, returning an int value</summary>
 		[MethodImpl( INLINE )] public static int RoundToInt( float value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => (int)Math.Round( value, midpointRounding );
 
 		/// <summary>Rounds the vector components to the nearest integer, returning an integer vector</summary>
-		[MethodImpl( INLINE )] public static Vector2Int RoundToInt( Vector2 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector2Int( (int)Math.Round( value.x, midpointRounding ), (int)Math.Round( value.y, midpointRounding ) );
+		[MethodImpl( INLINE )] public static Vector2Int RoundToInt( Vector2 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector2Int( (int)Math.Round( value.X, midpointRounding ), (int)Math.Round( value.Y, midpointRounding ) );
 
 		/// <inheritdoc cref="Mathfs.RoundToInt(Vector2,MidpointRounding)"/>
-		[MethodImpl( INLINE )] public static Vector3Int RoundToInt( Vector3 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector3Int( (int)Math.Round( value.x, midpointRounding ), (int)Math.Round( value.y, midpointRounding ), (int)Math.Round( value.z, midpointRounding ) );
+		[MethodImpl( INLINE )] public static Vector3Int RoundToInt( Vector3 value, MidpointRounding midpointRounding = MidpointRounding.ToEven ) => new Vector3Int( (int)Math.Round( value.X, midpointRounding ), (int)Math.Round( value.Y, midpointRounding ), (int)Math.Round( value.Z, midpointRounding ) );
 
 		#endregion
 
@@ -656,13 +671,13 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static float Frac( float x ) => x - Floor( x );
 
 		/// <summary>Returns the fractional part of the value for each component. Equivalent to <c>v - floor(v)</c></summary>
-		[MethodImpl( INLINE )] public static Vector2 Frac( Vector2 v ) => new Vector2( v.x - Floor( v.x ), v.y - Floor( v.y ) );
+		[MethodImpl( INLINE )] public static Vector2 Frac( Vector2 v ) => new Vector2( v.X - Floor( v.X ), v.Y - Floor( v.Y ) );
 
 		/// <inheritdoc cref="Mathfs.Frac(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3 Frac( Vector3 v ) => new Vector3( v.x - Floor( v.x ), v.y - Floor( v.y ), v.z - Floor( v.z ) );
+		[MethodImpl( INLINE )] public static Vector3 Frac( Vector3 v ) => new Vector3( v.X - Floor( v.X ), v.Y - Floor( v.Y ), v.Z - Floor( v.Z ) );
 
 		/// <inheritdoc cref="Mathfs.Frac(Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector4 Frac( Vector4 v ) => new Vector4( v.x - Floor( v.x ), v.y - Floor( v.y ), v.z - Floor( v.z ), v.w - Floor( v.w ) );
+		[MethodImpl( INLINE )] public static Vector4 Frac( Vector4 v ) => new Vector4( v.X - Floor( v.X ), v.Y - Floor( v.Y ), v.Z - Floor( v.Z ), v.W - Floor( v.W ) );
 
 		/// <summary>Repeats the given value in the interval specified by length</summary>
 		[MethodImpl( INLINE )] public static float Repeat( float value, float length ) => Clamp( value - Floor( value / length ) * length, 0.0f, length );
@@ -735,22 +750,23 @@ namespace Freya {
 		/// <param name="a">The start value, when t is 0</param>
 		/// <param name="b">The start value, when t is 1</param>
 		/// <param name="t">The t-values from 0 to 1 representing position along the lerp</param>
-		[MethodImpl( INLINE )] public static Vector2 Lerp( Vector2 a, Vector2 b, Vector2 t ) => new Vector2( Lerp( a.x, b.x, t.x ), Lerp( a.y, b.y, t.y ) );
+		[MethodImpl( INLINE )] public static Vector2 Lerp( Vector2 a, Vector2 b, Vector2 t ) => new Vector2( Lerp( a.X, b.X, t.X ), Lerp( a.Y, b.Y, t.Y ) );
 
 		/// <inheritdoc cref="Mathfs.Lerp(Vector2,Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3 Lerp( Vector3 a, Vector3 b, Vector3 t ) => new Vector3( Lerp( a.x, b.x, t.x ), Lerp( a.y, b.y, t.y ), Lerp( a.z, b.z, t.z ) );
+		[MethodImpl( INLINE )] public static Vector3 Lerp( Vector3 a, Vector3 b, Vector3 t ) => new Vector3( Lerp( a.X, b.X, t.X ), Lerp( a.Y, b.Y, t.Y ), Lerp( a.Z, b.Z, t.Z ) );
 
 		/// <inheritdoc cref="Mathfs.Lerp(Vector2,Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector4 Lerp( Vector4 a, Vector4 b, Vector4 t ) => new Vector4( Lerp( a.x, b.x, t.x ), Lerp( a.y, b.y, t.y ), Lerp( a.z, b.z, t.z ), Lerp( a.w, b.w, t.w ) );
+		[MethodImpl( INLINE )] public static Vector4 Lerp( Vector4 a, Vector4 b, Vector4 t ) => new Vector4( Lerp( a.X, b.X, t.X ), Lerp( a.Y, b.Y, t.Y ), Lerp( a.Z, b.Z, t.Z ), Lerp( a.W, b.W, t.W ) );
 
 		/// <summary>Linearly blends between two rectangles, moving and resizing from the center. Note: this lerp is unclamped</summary>
 		/// <param name="a">The start value, when t is 0</param>
 		/// <param name="b">The start value, when t is 1</param>
 		/// <param name="t">The t-values from 0 to 1 representing position along the lerp</param>
 		public static Rect Lerp( Rect a, Rect b, float t ) {
-			Vector2 center = Vector2.LerpUnclamped( a.center, b.center, t );
-			Vector2 size = Vector2.LerpUnclamped( a.size, b.size, t );
-			return new Rect( default, size ) { center = center };
+			Vector2 center = CoreUtil.LerpUnclamped( a.GetCenter(), b.GetCenter(), t );
+			Vector2 size = CoreUtil.LerpUnclamped( a.Size, b.Size, t );
+			Vector2 corner = center - size / 2f;
+			return new Rect( corner, size );
 		}
 
 		/// <summary>Blends between a and b, based on the t-value. When t = 0 it returns a, when t = 1 it returns b, and any values between are blended linearly</summary>
@@ -787,13 +803,13 @@ namespace Freya {
 		/// <param name="a">The start of the ranges, where it would return 0</param>
 		/// <param name="b">The end of the ranges, where it would return 1</param>
 		/// <param name="v">A value between a and b. Note: values outside this range are still valid, and will be extrapolated</param>
-		[MethodImpl( INLINE )] public static Vector2 InverseLerp( Vector2 a, Vector2 b, Vector2 v ) => new Vector2( ( v.x - a.x ) / ( b.x - a.x ), ( v.y - a.y ) / ( b.y - a.y ) );
+		[MethodImpl( INLINE )] public static Vector2 InverseLerp( Vector2 a, Vector2 b, Vector2 v ) => new Vector2( ( v.X - a.X ) / ( b.X - a.X ), ( v.Y - a.Y ) / ( b.Y - a.Y ) );
 
 		/// <inheritdoc cref="Mathfs.InverseLerp(Vector2,Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3 InverseLerp( Vector3 a, Vector3 b, Vector3 v ) => new Vector3( ( v.x - a.x ) / ( b.x - a.x ), ( v.y - a.y ) / ( b.y - a.y ), ( v.z - a.z ) / ( b.z - a.z ) );
+		[MethodImpl( INLINE )] public static Vector3 InverseLerp( Vector3 a, Vector3 b, Vector3 v ) => new Vector3( ( v.X - a.X ) / ( b.X - a.X ), ( v.Y - a.Y ) / ( b.Y - a.Y ), ( v.Z - a.Z ) / ( b.Z - a.Z ) );
 
 		/// <inheritdoc cref="Mathfs.InverseLerp(Vector2,Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector4 InverseLerp( Vector4 a, Vector4 b, Vector4 v ) => new Vector4( ( v.x - a.x ) / ( b.x - a.x ), ( v.y - a.y ) / ( b.y - a.y ), ( v.z - a.z ) / ( b.z - a.z ), ( v.w - a.w ) / ( b.w - a.w ) );
+		[MethodImpl( INLINE )] public static Vector4 InverseLerp( Vector4 a, Vector4 b, Vector4 v ) => new Vector4( ( v.X - a.X ) / ( b.X - a.X ), ( v.Y - a.Y ) / ( b.Y - a.Y ), ( v.Z - a.Z ) / ( b.Z - a.Z ), ( v.W - a.W ) / ( b.W - a.W ) );
 
 		/// <summary>Given a value between a and b, returns its normalized location in that range, as a t-value (interpolant) clamped between 0 and 1</summary>
 		/// <param name="a">The start of the range, where it would return 0</param>
@@ -851,13 +867,13 @@ namespace Freya {
 		/// <param name="iRect">The input Rect</param>
 		/// <param name="oRect">The output Rect</param>
 		/// <param name="iPos">The input position in the input Rect space</param>
-		[MethodImpl( INLINE )] public static Vector2 Remap( Rect iRect, Rect oRect, Vector2 iPos ) => Remap( iRect.min, iRect.max, oRect.min, oRect.max, iPos );
+		[MethodImpl( INLINE )] public static Vector2 Remap( Rect iRect, Rect oRect, Vector2 iPos ) => Remap( iRect.Position, iRect.End, oRect.Position, oRect.End, iPos );
 
 		/// <summary>Remaps a value from the input Bounds to the output Bounds</summary>
 		/// <param name="iBounds">The input Bounds</param>
 		/// <param name="oBounds">The output Bounds</param>
 		/// <param name="iPos">The input position in the input Bounds space</param>
-		[MethodImpl( INLINE )] public static Vector3 Remap( Bounds iBounds, Bounds oBounds, Vector3 iPos ) => Remap( iBounds.min, iBounds.max, oBounds.min, oBounds.max, iPos );
+		[MethodImpl( INLINE )] public static Vector3 Remap( Bounds iBounds, Bounds oBounds, Vector3 iPos ) => Remap( iBounds.Position, iBounds.End, oBounds.Position, oBounds.End, iPos );
 
 		/// <summary>Remaps a value from the input range to the output range</summary>
 		/// <param name="inRange">The input range</param>
@@ -924,7 +940,7 @@ namespace Freya {
 		/// <param name="smoothTime">Approximately the time it will take to reach the target. A smaller value will reach the target faster</param>
 		/// <param name="maxSpeed">	Optionally allows you to clamp the maximum speed</param>
 		/// <param name="deltaTime">The time since the last call to this function. By default Time.deltaTime</param>
-		public static float SmoothDamp( float current, float target, ref float currentVelocity, float smoothTime, [Uei.DefaultValue( "Mathf.Infinity" )] float maxSpeed, [Uei.DefaultValue( "Time.deltaTime" )] float deltaTime ) {
+		public static float SmoothDamp( float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime ) {
 			// Based on Game Programming Gems 4 Chapter 1.10
 			smoothTime = MathF.Max( 0.0001F, smoothTime );
 			float omega = 2F / smoothTime;
@@ -958,106 +974,107 @@ namespace Freya {
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		[MethodImpl( INLINE )] public static float WeightedSum( Vector2 w, float a, float b ) => a * w.x + b * w.y;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		[MethodImpl( INLINE )] public static float WeightedSum( Vector2 w, float a, float b ) => a * w.X + b * w.Y;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		/// <param name="c">The third value, weighted by <c>w.z</c></param>
-		[MethodImpl( INLINE )] public static float WeightedSum( Vector3 w, float a, float b, float c ) => a * w.x + b * w.y + c * w.z;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		/// <param name="c">The third value, weighted by <c>w.Z</c></param>
+		[MethodImpl( INLINE )] public static float WeightedSum( Vector3 w, float a, float b, float c ) => a * w.X + b * w.Y + c * w.Z;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		/// <param name="c">The third value, weighted by <c>w.z</c></param>
-		/// <param name="d">The fourth value, weighted by <c>w.w</c></param>
-		[MethodImpl( INLINE )] public static float WeightedSum( Vector4 w, float a, float b, float c, float d ) => a * w.x + b * w.y + c * w.z + d * w.w;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		/// <param name="c">The third value, weighted by <c>w.Z</c></param>
+		/// <param name="d">The fourth value, weighted by <c>w.W</c></param>
+		[MethodImpl( INLINE )] public static float WeightedSum( Vector4 w, float a, float b, float c, float d ) => a * w.X + b * w.Y + c * w.Z + d * w.W;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>		
-		[MethodImpl( INLINE )] public static Vector2 WeightedSum( Vector2 w, Vector2 a, Vector2 b ) => a * w.x + b * w.y;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>		
+		[MethodImpl( INLINE )] public static Vector2 WeightedSum( Vector2 w, Vector2 a, Vector2 b ) => a * w.X + b * w.Y;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		/// <param name="c">The third value, weighted by <c>w.z</c></param>
-		[MethodImpl( INLINE )] public static Vector2 WeightedSum( Vector3 w, Vector2 a, Vector2 b, Vector2 c ) => a * w.x + b * w.y + c * w.z;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		/// <param name="c">The third value, weighted by <c>w.Z</c></param>
+		[MethodImpl( INLINE )] public static Vector2 WeightedSum( Vector3 w, Vector2 a, Vector2 b, Vector2 c ) => a * w.X + b * w.Y + c * w.Z;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		/// <param name="c">The third value, weighted by <c>w.z</c></param>
-		/// <param name="d">The fourth value, weighted by <c>w.w</c></param>
-		[MethodImpl( INLINE )] public static Vector2 WeightedSum( Vector4 w, Vector2 a, Vector2 b, Vector2 c, Vector2 d ) => a * w.x + b * w.y + c * w.z + d * w.w;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		/// <param name="c">The third value, weighted by <c>w.Z</c></param>
+		/// <param name="d">The fourth value, weighted by <c>w.W</c></param>
+		[MethodImpl( INLINE )] public static Vector2 WeightedSum( Vector4 w, Vector2 a, Vector2 b, Vector2 c, Vector2 d ) => a * w.X + b * w.Y + c * w.Z + d * w.W;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		[MethodImpl( INLINE )] public static Vector3 WeightedSum( Vector3 w, Vector3 a, Vector3 b ) => a * w.x + b * w.y;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		[MethodImpl( INLINE )] public static Vector3 WeightedSum( Vector3 w, Vector3 a, Vector3 b ) => a * w.X + b * w.Y;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		/// <param name="c">The third value, weighted by <c>w.z</c></param>
-		[MethodImpl( INLINE )] public static Vector3 WeightedSum( Vector3 w, Vector3 a, Vector3 b, Vector3 c ) => a * w.x + b * w.y + c * w.z;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		/// <param name="c">The third value, weighted by <c>w.Z</c></param>
+		[MethodImpl( INLINE )] public static Vector3 WeightedSum( Vector3 w, Vector3 a, Vector3 b, Vector3 c ) => a * w.X + b * w.Y + c * w.Z;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		/// <param name="c">The third value, weighted by <c>w.z</c></param>
-		/// <param name="d">The fourth value, weighted by <c>w.w</c></param>
-		[MethodImpl( INLINE )] public static Vector3 WeightedSum( Vector4 w, Vector3 a, Vector3 b, Vector3 c, Vector3 d ) => a * w.x + b * w.y + c * w.z + d * w.w;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		/// <param name="c">The third value, weighted by <c>w.Z</c></param>
+		/// <param name="d">The fourth value, weighted by <c>w.W</c></param>
+		[MethodImpl( INLINE )] public static Vector3 WeightedSum( Vector4 w, Vector3 a, Vector3 b, Vector3 c, Vector3 d ) => a * w.X + b * w.Y + c * w.Z + d * w.W;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		[MethodImpl( INLINE )] public static Vector4 WeightedSum( Vector4 w, Vector4 a, Vector4 b ) => a * w.x + b * w.y;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		[MethodImpl( INLINE )] public static Vector4 WeightedSum( Vector4 w, Vector4 a, Vector4 b ) => a * w.X + b * w.Y;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		/// <param name="c">The third value, weighted by <c>w.z</c></param>
-		[MethodImpl( INLINE )] public static Vector4 WeightedSum( Vector4 w, Vector4 a, Vector4 b, Vector4 c ) => a * w.x + b * w.y + c * w.z;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		/// <param name="c">The third value, weighted by <c>w.Z</c></param>
+		[MethodImpl( INLINE )] public static Vector4 WeightedSum( Vector4 w, Vector4 a, Vector4 b, Vector4 c ) => a * w.X + b * w.Y + c * w.Z;
 
 		/// <summary>Multiplies each component of <c>w</c> by the input values, and returns their sum</summary>
 		/// <param name="w">The weights (per component) to apply to the rest of the values</param>
-		/// <param name="a">The first value, weighted by <c>w.x</c></param>
-		/// <param name="b">The second value, weighted by <c>w.y</c></param>
-		/// <param name="c">The third value, weighted by <c>w.z</c></param>
-		/// <param name="d">The fourth value, weighted by <c>w.w</c></param>
-		[MethodImpl( INLINE )] public static Vector4 WeightedSum( Vector4 w, Vector4 a, Vector4 b, Vector4 c, Vector4 d ) => a * w.x + b * w.y + c * w.z + d * w.w;
+		/// <param name="a">The first value, weighted by <c>w.X</c></param>
+		/// <param name="b">The second value, weighted by <c>w.Y</c></param>
+		/// <param name="c">The third value, weighted by <c>w.Z</c></param>
+		/// <param name="d">The fourth value, weighted by <c>w.W</c></param>
+		[MethodImpl( INLINE )] public static Vector4 WeightedSum( Vector4 w, Vector4 a, Vector4 b, Vector4 c, Vector4 d ) => a * w.X + b * w.Y + c * w.Z + d * w.W;
 
 		#endregion
 
 		#region Vector math
 
 		/// <summary>The determinant is equivalent to the dot product, but with one vector rotated 90 degrees.
-		/// Note that <c>det(a,b) != det(b,a)</c>. <c>It's equivalent to a.x * b.y - a.y * b.x</c>.
+		/// Note that <c>det(a,b) != det(b,a)</c>. <c>It's equivalent to a.X * b.Y - a.Y * b.X</c>.
 		/// It is also known as the 2D Cross Product, Wedge Product, Outer Product and Perpendicular Dot Product</summary>
-		public static float Determinant /*or Cross*/( Vector2 a, Vector2 b ) => a.x * b.y - a.y * b.x; // 2D "cross product"
+		public static float Determinant /*or Cross*/( Vector2 a, Vector2 b ) => a.X * b.Y - a.Y * b.X; // 2D "cross product"
+		public static float Determinant /*or Cross*/( Vector3 a, Vector3 b ) => a.X * b.Y - a.Y * b.X; // 2D "cross product"
 
 		/// <summary>Returns the direction and magnitude of the vector. Cheaper than calculating length and normalizing it separately</summary>
 		public static (Vector2 dir, float magnitude ) GetDirAndMagnitude( Vector2 v ) {
-			float magnitude = v.magnitude;
+			float magnitude = v.Length();
 			return ( v / magnitude, magnitude );
 		}
 
 		/// <inheritdoc cref="Mathfs.GetDirAndMagnitude(Vector2)"/>
 		public static (Vector3 dir, float magnitude ) GetDirAndMagnitude( Vector3 v ) {
-			float magnitude = v.magnitude;
+			float magnitude = v.Length();
 			return ( v / magnitude, magnitude );
 		}
 
@@ -1066,27 +1083,27 @@ namespace Freya {
 		/// <param name="min">Minimum length</param>
 		/// <param name="max">Maximum length</param>
 		public static Vector2 ClampMagnitude( Vector2 v, float min, float max ) {
-			float mag = v.magnitude;
+			float mag = v.Length();
 			return mag < min ? ( v / mag ) * min : mag > max ? ( v / mag ) * max : v;
 		}
 
 		/// <inheritdoc cref="Mathfs.ClampMagnitude(Vector2,float,float)"/>
 		public static Vector3 ClampMagnitude( Vector3 v, float min, float max ) {
-			float mag = v.magnitude;
+			float mag = v.Length();
 			return mag < min ? ( v / mag ) * min : mag > max ? ( v / mag ) * max : v;
 		}
 
 		/// <summary>Returns the chebyshev distance between the two vectors</summary>
-		[MethodImpl( INLINE )] public static float ChebyshevDistance( Vector3 a, Vector3 b ) => Max( Abs( a.x - b.x ), Abs( a.y - b.y ), Abs( a.z - b.z ) );
+		[MethodImpl( INLINE )] public static float ChebyshevDistance( Vector3 a, Vector3 b ) => Max( Abs( a.X - b.X ), Abs( a.Y - b.Y ), Abs( a.Z - b.Z ) );
 
 		/// <summary>Returns the taxicab/rectilinear distance between the two vectors</summary>
-		[MethodImpl( INLINE )] public static float TaxicabDistance( Vector3 a, Vector3 b ) => Abs( a.x - b.x ) + Abs( a.y - b.y ) + Abs( a.z - b.z );
+		[MethodImpl( INLINE )] public static float TaxicabDistance( Vector3 a, Vector3 b ) => Abs( a.X - b.X ) + Abs( a.Y - b.Y ) + Abs( a.Z - b.Z );
 
 		/// <inheritdoc cref="ChebyshevDistance(Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static float ChebyshevDistance( Vector2 a, Vector2 b ) => Max( Abs( a.x - b.x ), Abs( a.y - b.y ) );
+		[MethodImpl( INLINE )] public static float ChebyshevDistance( Vector2 a, Vector2 b ) => Max( Abs( a.X - b.X ), Abs( a.Y - b.Y ) );
 
 		/// <inheritdoc cref="TaxicabDistance(Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static float TaxicabDistance( Vector2 a, Vector2 b ) => Abs( a.x - b.x ) + Abs( a.y - b.y );
+		[MethodImpl( INLINE )] public static float TaxicabDistance( Vector2 a, Vector2 b ) => Abs( a.X - b.X ) + Abs( a.Y - b.Y );
 
 		/// <summary>Returns the average/center of the two input vectors</summary>
 		[MethodImpl( INLINE )] public static Vector2 Average( Vector2 a, Vector2 b ) => ( a + b ) / 2f;
@@ -1095,28 +1112,28 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static Vector3 Average( Vector3 a, Vector3 b ) => ( a + b ) / 2f;
 
 		/// <summary>Returns the average/halfway direction between the two input direction vectors. Note that this presumes both <c>aDir</c> and <c>bDir</c> have the same length</summary>
-		[MethodImpl( INLINE )] public static Vector2 AverageDir( Vector2 aDir, Vector2 bDir ) => ( aDir + bDir ).normalized;
+		[MethodImpl( INLINE )] public static Vector2 AverageDir( Vector2 aDir, Vector2 bDir ) => ( aDir + bDir ).Normalized();
 
 		/// <inheritdoc cref="AverageDir(Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static Vector3 AverageDir( Vector3 aDir, Vector3 bDir ) => ( aDir + bDir ).normalized;
+		[MethodImpl( INLINE )] public static Vector3 AverageDir( Vector3 aDir, Vector3 bDir ) => ( aDir + bDir ).Normalized();
 
 		/// <summary>Returns the squared distance between two points.
 		/// This is faster than the actual distance, and is useful when comparing distances where the absolute distance doesn't matter</summary>
-		[MethodImpl( INLINE )] public static float DistanceSquared( Vector2 a, Vector2 b ) => ( a.x - b.x ).Square() + ( a.y - b.y ).Square();
+		[MethodImpl( INLINE )] public static float DistanceSquared( Vector2 a, Vector2 b ) => ( a.X - b.X ).Square() + ( a.Y - b.Y ).Square();
 
 		/// <inheritdoc cref="DistanceSquared(Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static float DistanceSquared( Vector3 a, Vector3 b ) => ( a.x - b.x ).Square() + ( a.y - b.y ).Square() + ( a.z - b.z ).Square();
+		[MethodImpl( INLINE )] public static float DistanceSquared( Vector3 a, Vector3 b ) => ( a.X - b.X ).Square() + ( a.Y - b.Y ).Square() + ( a.Z - b.Z ).Square();
 
 		/// <inheritdoc cref="DistanceSquared(Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static float DistanceSquared( Vector4 a, Vector4 b ) => ( a.x - b.x ).Square() + ( a.y - b.y ).Square() + ( a.z - b.z ).Square() + ( a.w - b.w ).Square();
+		[MethodImpl( INLINE )] public static float DistanceSquared( Vector4 a, Vector4 b ) => ( a.X - b.X ).Square() + ( a.Y - b.Y ).Square() + ( a.Z - b.Z ).Square() + ( a.W - b.W ).Square();
 
 		/// <summary>The t-value (fraction) where a projected along b would be</summary>
 		/// <param name="a">The vector to project</param>
 		/// <param name="b">The vector to project onto</param>
-		public static float ProjectionTValue( Vector3 a, Vector3 b ) => Vector3.Dot( a, b ) / Vector3.Dot( b, b );
+		public static float ProjectionTValue( Vector3 a, Vector3 b ) => a.Dot( b ) / b.Dot( b );
 
 		/// <inheritdoc cref="ProjectionTValue(Vector3,Vector3)"/>
-		public static float ProjectionTValue( Vector2 a, Vector2 b ) => Vector2.Dot( a, b ) / Vector2.Dot( b, b );
+		public static float ProjectionTValue( Vector2 a, Vector2 b ) => a.Dot( b ) / b.Dot( b );
 
 		/// <summary>Calculates a rotation minimizing normal direction, given start and end conditions. This is usually used when evaluating rotation minimizing frames on curves.</summary>
 		/// <param name="posA">The start position</param>
@@ -1127,14 +1144,14 @@ namespace Freya {
 		public static Vector3 GetRotationMinimizingNormal( Vector3 posA, Vector3 tangentA, Vector3 normalA, Vector3 posB, Vector3 tangentB ) {
 			// source: https://www.microsoft.com/en-us/research/wp-content/uploads/2016/12/Computation-of-rotation-minimizing-frames.pdf
 			Vector3 v1 = posB - posA;
-			float v1_dot_v1_half = Vector3.Dot( v1, v1 ) / 2;
-			float r1 = Vector3.Dot( v1, normalA ) / v1_dot_v1_half;
-			float r2 = Vector3.Dot( v1, tangentA ) / v1_dot_v1_half;
+			float v1_dot_v1_half = v1.Dot( v1 ) / 2;
+			float r1 = v1.Dot( normalA ) / v1_dot_v1_half;
+			float r2 = v1.Dot( tangentA ) / v1_dot_v1_half;
 			Vector3 nL = normalA - r1 * v1;
 			Vector3 tL = tangentA - r2 * v1;
 			Vector3 v2 = tangentB - tL;
-			float r3 = Vector3.Dot( v2, nL ) / Vector3.Dot( v2, v2 );
-			return ( nL - 2 * r3 * v2 ).normalized;
+			float r3 = v2.Dot( nL ) / v2.Dot( v2 );
+			return ( nL - 2 * r3 * v2 ).Normalized();
 		}
 
 		#endregion
@@ -1149,27 +1166,27 @@ namespace Freya {
 		/// <summary>Returns the angle of the input vector, in radians. You can also use <c>myVector.Angle()</c></summary>
 		/// <param name="vec">The vector to get the angle of. It does not have to be normalized</param>
 		/// <seealso cref="MathfsExtensions.Angle"/>
-		[MethodImpl( INLINE )] public static float DirToAng( Vector2 vec ) => MathF.Atan2( vec.y, vec.x );
+		[MethodImpl( INLINE )] public static float DirToAng( Vector2 vec ) => MathF.Atan2( vec.Y, vec.X );
 
 		/// <summary>Returns a 2D orientation from a vector, representing the X axis</summary>
 		/// <param name="v">The direction to create a 2D orientation from (does not have to be normalized)</param>
 		[MethodImpl( INLINE )] public static Quaternion DirToOrientation( Vector2 v ) {
-			v.Normalize();
-			v.x += 1;
-			v.Normalize();
-			return new Quaternion( 0, 0, v.y, v.x );
+			v = v.Normalized();
+			v.X += 1;
+			v = v.Normalized();
+			return new Quaternion( 0, 0, v.Y, v.X );
 		}
 
 		/// <summary>The angle between two quaternions, in radians</summary>
 		public static float Angle( Quaternion a, Quaternion b ) {
-			float num = Mathf.Min( Mathf.Abs( Quaternion.Dot( a, b ) ), 1f );
+			float num = Math.Min( Math.Abs( a.Dot( b ) ), 1f );
 			return num > 0.999998986721039 ? 0.0f : (float)( MathF.Acos( num ) * 2.0 );
 		}
 
 		/// <summary>Returns a 2D Pose from a point and a vector, representing the X axis</summary>
 		/// <param name="pt">The location of the pose</param>
 		/// <param name="v">The direction to create a 2D orientation from (does not have to be normalized)</param>
-		[MethodImpl( INLINE )] public static Pose PointDirToPose( Vector2 pt, Vector2 v ) => new Pose( pt, DirToOrientation( v ) );
+		[MethodImpl( INLINE )] public static Pose PointDirToPose( Vector2 pt, Vector2 v ) => new Pose( pt.ToVector3(), DirToOrientation( v ) );
 
 		/// <summary>Linearly blends between two poses. The position will lerp, while the rotation will slerp. Note: this lerp is unclamped</summary>
 		/// <param name="a">Pose at t = 0</param>
@@ -1177,8 +1194,8 @@ namespace Freya {
 		/// <param name="t">The t-value to blend from a to b, from 0 to 1 (values outside will extrapolate)</param>
 		public static Pose Lerp( Pose a, Pose b, float t ) =>
 			new Pose(
-				Vector3.LerpUnclamped( a.position, b.position, t ),
-				Quaternion.SlerpUnclamped( a.rotation, b.rotation, t )
+				CoreUtil.LerpUnclamped( a.Position, b.Position, t ),
+				CoreUtil.SlerpUnclamped( a.Rotation, b.Rotation, t )
 			);
 
 		/// <summary>Returns a matrix representing a 2D position and rotation</summary>
@@ -1187,10 +1204,10 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static Matrix4x4 GetMatrixFrom2DPointDir( Vector2 point, Vector2 tangent ) {
 			Vector2 N = tangent.Rotate90CCW();
 			return new Matrix4x4(
-				new Vector4( tangent.x, tangent.y, 0, 0 ),
-				new Vector4( N.x, N.y, 0, 0 ),
+				new Vector4( tangent.X, tangent.Y, 0, 0 ),
+				new Vector4( N.X, N.Y, 0, 0 ),
 				new Vector4( 0, 0, 1, 0 ),
-				new Vector4( point.x, point.y, 0, 1 )
+				new Vector4( point.X, point.Y, 0, 1 )
 			);
 		}
 
@@ -1198,7 +1215,7 @@ namespace Freya {
 		/// <param name="velocity">The first derivative of the point in the curve</param>
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
 		[MethodImpl( INLINE )] public static float GetCurvature( Vector2 velocity, Vector2 acceleration ) {
-			float dMag = velocity.magnitude;
+			float dMag = velocity.Length();
 			return Determinant( velocity, acceleration ) / ( dMag * dMag * dMag );
 		}
 
@@ -1208,7 +1225,7 @@ namespace Freya {
 		/// <param name="velocity">The first derivative of the point in the curve</param>
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
 		[MethodImpl( INLINE )] public static Bivector3 GetCurvature( Vector3 velocity, Vector3 acceleration ) {
-			float dMag = velocity.magnitude;
+			float dMag = velocity.Length();
 			return Wedge( velocity, acceleration ) / ( dMag * dMag * dMag );
 		}
 
@@ -1217,24 +1234,24 @@ namespace Freya {
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
 		/// <param name="jerk">The third derivative of the point in the curve</param>
 		[MethodImpl( INLINE )] public static float GetTorsion( Vector3 velocity, Vector3 acceleration, Vector3 jerk ) {
-			Vector3 cVector = Vector3.Cross( velocity, acceleration );
-			return Vector3.Dot( cVector, jerk ) / cVector.sqrMagnitude;
+			Vector3 cVector = velocity.Cross( acceleration );
+			return cVector.Dot( jerk ) / cVector.LengthSquared();
 		}
 
 		/// <summary>Returns the frenet-serret (curvature-based) normal direction at a given point in a curve</summary>
 		/// <param name="velocity">The first derivative of the point in the curve</param>
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
-		[MethodImpl( INLINE )] public static Vector3 GetArcNormal( Vector3 velocity, Vector3 acceleration ) => Vector3.Cross( Vector3.Cross( velocity, acceleration ).normalized, velocity.normalized );
+		[MethodImpl( INLINE )] public static Vector3 GetArcNormal( Vector3 velocity, Vector3 acceleration ) => velocity.Cross( acceleration ).Normalized().Cross( velocity.Normalized() );
 
 		/// <summary>Returns the frenet-serret (curvature-based) binormal direction at a given point in a curve</summary>
 		/// <param name="velocity">The first derivative of the point in the curve</param>
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
-		[MethodImpl( INLINE )] public static Vector3 GetArcBinormal( Vector3 velocity, Vector3 acceleration ) => Vector3.Cross( velocity, acceleration ).normalized;
+		[MethodImpl( INLINE )] public static Vector3 GetArcBinormal( Vector3 velocity, Vector3 acceleration ) => velocity.Cross( acceleration ).Normalized();
 
 		/// <summary>Returns a normal direction given a reference up vector and a tangent direction</summary>
 		/// <param name="tangent">The tangent direction (does not have to be normalized)</param>
 		/// <param name="up">The reference up vector. The normal will be perpendicular to both the supplied up vector and the curve</param>
-		[MethodImpl( INLINE )] public static Vector3 GetNormalFromLookTangent( Vector3 tangent, Vector3 up ) => Vector3.Cross( up, tangent ).normalized;
+		[MethodImpl( INLINE )] public static Vector3 GetNormalFromLookTangent( Vector3 tangent, Vector3 up ) => up.Cross( tangent ).Normalized();
 
 		/// <summary>Returns the binormal from a vector, given a reference up vector.
 		/// The binormal will attempt to be as aligned with the reference vector as possible,
@@ -1242,8 +1259,8 @@ namespace Freya {
 		/// <param name="tangent">The tangent direction (does not have to be normalized)</param>
 		/// <param name="up">The reference up vector. The normal will be perpendicular to both the supplied up vector and the tangent</param>
 		[MethodImpl( INLINE )] public static Vector3 GetBinormalFromLookTangent( Vector3 tangent, Vector3 up ) {
-			Vector3 normal = Vector3.Cross( up, tangent ).normalized;
-			return Vector3.Cross( tangent.normalized, normal );
+			Vector3 normal = up.Cross( tangent ).Normalized();
+			return tangent.Normalized().Cross( normal );
 		}
 
 		/// <summary>Returns the frenet-serret (curvature-based) orientation of a point in a curve with the given velocity and acceleration values, where the Z direction is tangent to the curve.
@@ -1251,14 +1268,14 @@ namespace Freya {
 		/// <param name="velocity">The first derivative of the point in the curve</param>
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
 		[MethodImpl( INLINE )] public static Quaternion GetArcOrientation( Vector3 velocity, Vector3 acceleration ) {
-			Vector3 binormal = Vector3.Cross( velocity, acceleration );
-			return Quaternion.LookRotation( velocity, binormal );
+			Vector3 binormal = velocity.Cross( acceleration );
+			return NMath.LookRotation( velocity, binormal );
 		}
 
 		/// <inheritdoc cref="GetArcOrientation(Vector3,Vector3)"/>
 		[MethodImpl( INLINE )] public static Quaternion GetArcOrientation( Vector2 velocity, Vector2 acceleration ) {
 			Vector3 binormal = new Vector3( 0, 0, Sign( Determinant( velocity, acceleration ) ) );
-			return Quaternion.LookRotation( velocity, binormal );
+			return NMath.LookRotation( velocity.ToVector3(), binormal );
 		}
 
 		/// <summary>Returns the frenet-serret (curvature-based) orientation of a point in a curve with the given velocity and acceleration values, where the X direction is tangent to the curve.
@@ -1267,13 +1284,13 @@ namespace Freya {
 		/// <param name="acceleration">The second derivative of the point in the curve</param>
 		[MethodImpl( INLINE )] public static Quaternion GetFrenetSerretOrientation( Vector3 velocity, Vector3 acceleration ) {
 			GetCurvatureOrientationAxes( velocity, acceleration, out _, out Vector3 N, out Vector3 B );
-			return Quaternion.LookRotation( B, N );
+			return NMath.LookRotation( B, N );
 		}
 
 		/// <inheritdoc cref="GetFrenetSerretOrientation(Vector3,Vector3)"/>
 		[MethodImpl( INLINE )] public static Quaternion GetFrenetSerretOrientation( Vector2 velocity, Vector2 acceleration ) {
 			GetCurvatureOrientationAxes( velocity, acceleration, out _, out Vector3 N, out Vector3 B );
-			return Quaternion.LookRotation( B, N );
+			return NMath.LookRotation( B, N );
 		}
 
 		/// <summary>Returns the frenet-serret (curvature-based) orientation axes of a point in a curve with the given velocity and acceleration values</summary>
@@ -1283,17 +1300,17 @@ namespace Freya {
 		/// <param name="normal">The axis pointing to the inside of the curve</param>
 		/// <param name="binormal">The axis of rotation of the curve</param>
 		[MethodImpl( INLINE )] public static void GetCurvatureOrientationAxes( Vector3 velocity, Vector3 acceleration, out Vector3 tangent, out Vector3 normal, out Vector3 binormal ) {
-			tangent = velocity.normalized;
-			binormal = Vector3.Cross( velocity, acceleration ).normalized;
-			normal = Vector3.Cross( binormal, tangent );
+			tangent = velocity.Normalized();
+			binormal = velocity.Cross( acceleration ).Normalized();
+			normal = binormal.Cross( tangent );
 		}
 
 		/// <inheritdoc cref="GetCurvatureOrientationAxes(Vector3,Vector3,out Vector3,out Vector3,out Vector3)"/>
 		[MethodImpl( INLINE )] public static void GetCurvatureOrientationAxes( Vector2 velocity, Vector2 acceleration, out Vector3 tangent, out Vector3 normal, out Vector3 binormal ) {
-			tangent = velocity.normalized;
+			tangent = velocity.Normalized().ToVector3();
 			float sign = Sign( Determinant( velocity, acceleration ) );
 			binormal = new Vector3( 0, 0, sign );
-			normal = new Vector3( -sign * tangent.y, sign * tangent.x, 0 );
+			normal = new Vector3( -sign * tangent.Y, sign * tangent.X, 0 );
 		}
 
 		/// <summary>Returns a 2D look-orientation (X forward), ensuring the returned Y axis is upright with regards to the up vector</summary>
@@ -1301,28 +1318,28 @@ namespace Freya {
 		/// <param name="up">The reference up direction of the rotation to align to, usually pointing along world up</param>
 		[MethodImpl( INLINE )] public static Quaternion GetLookRotation2D( Vector2 forward, Vector2 up ) {
 			int sign = Determinant( forward, up ) >= 0 ? 1 : -1;
-			Vector2 Y = new(-sign * forward.y, sign * forward.x);
+			Vector2 Y = new(-sign * forward.Y, sign * forward.X);
 			Vector3 Z = new(0, 0, sign);
-			return Quaternion.LookRotation( Z, Y );
+			return NMath.LookRotation( Z, Y.ToVector3() );
 		}
 
 		/// <inheritdoc cref="GetLookRotation2D(Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static Quaternion GetLookRotation2D( Vector2 forward ) => GetLookRotation2D( forward, Vector2.up );
+		[MethodImpl( INLINE )] public static Quaternion GetLookRotation2D( Vector2 forward ) => GetLookRotation2D( forward, Vector2.Up );
 
 		/// <summary>Returns the signed angle between <c>a</c> and <c>b</c>, in the range -tau/2 to tau/2 (-pi to pi)</summary>
 		[MethodImpl( INLINE )] public static float SignedAngle( Vector2 a, Vector2 b ) => AngleBetween( a, b ) * MathF.Sign( Determinant( a, b ) ); // -tau/2 to tau/2
 
 		/// <summary>Returns the shortest angle between <c>a</c> and <c>b</c>, in the range 0 to tau/2 (0 to pi)</summary>
-		[MethodImpl( INLINE )] public static float AngleBetween( Vector2 a, Vector2 b ) => MathF.Acos( Vector2.Dot( a.normalized, b.normalized ).ClampNeg1to1() );
+		[MethodImpl( INLINE )] public static float AngleBetween( Vector2 a, Vector2 b ) => MathF.Acos( a.Normalized().Dot( b.Normalized() ).ClampNeg1to1() );
 
 		/// <summary>Returns the shortest angle between two normalized vectors <c>a</c> and <c>b</c>, in the range 0 to tau/2 (0 to pi)</summary>
-		[MethodImpl( INLINE )] public static float AngleBetweenPreNormalized( Vector2 a, Vector2 b ) => MathF.Acos( Vector2.Dot( a, b ).ClampNeg1to1() );
+		[MethodImpl( INLINE )] public static float AngleBetweenPreNormalized( Vector2 a, Vector2 b ) => MathF.Acos( a.Dot( b ).ClampNeg1to1() );
 
 		/// <inheritdoc cref="AngleBetween(Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static float AngleBetween( Vector3 a, Vector3 b ) => MathF.Acos( Vector3.Dot( a.normalized, b.normalized ).ClampNeg1to1() );
+		[MethodImpl( INLINE )] public static float AngleBetween( Vector3 a, Vector3 b ) => MathF.Acos( a.Normalized().Dot( b.Normalized() ).ClampNeg1to1() );
 
 		/// <inheritdoc cref="AngleBetweenPreNormalized(Vector2,Vector2)"/>
-		[MethodImpl( INLINE )] public static float AngleBetweenPreNormalized( Vector3 a, Vector3 b ) => MathF.Acos( Vector3.Dot( a, b ).ClampNeg1to1() );
+		[MethodImpl( INLINE )] public static float AngleBetweenPreNormalized( Vector3 a, Vector3 b ) => MathF.Acos( a.Dot( b ).ClampNeg1to1() );
 
 		/// <summary>Returns the clockwise angle between <c>from</c> and <c>to</c>, in the range 0 to tau (0 to 2*pi)</summary>
 		[MethodImpl( INLINE )] public static float AngleFromToCW( Vector2 from, Vector2 to ) => Determinant( from, to ) < 0 ? AngleBetween( from, to ) : TAU - AngleBetween( from, to );
@@ -1416,7 +1433,7 @@ namespace Freya {
 		/// <param name="smoothTime">Approximately the time it will take to reach the target. A smaller value will reach the target faster</param>
 		/// <param name="maxSpeed">Optionally allows you to clamp the maximum speed</param>
 		/// <param name="deltaTime">The time since the last call to this function. By default Time.deltaTime</param>
-		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime, [Uei.DefaultValue( "Mathf.Infinity" )] float maxSpeed, [Uei.DefaultValue( "Time.deltaTime" )] float deltaTime ) {
+		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime ) {
 			target = current + DeltaAngle( current, target );
 			return SmoothDamp( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
 		}
@@ -1428,10 +1445,10 @@ namespace Freya {
 		/// <summary>Given a position within a -1 to 1 square, remaps it to the unit circle</summary>
 		/// <param name="c">The input position inside the square</param>
 		public static Vector2 SquareToDisc( Vector2 c ) {
-			c.x = c.x.ClampNeg1to1();
-			c.y = c.y.ClampNeg1to1();
-			float u = c.x * Sqrt( 1 - ( c.y * c.y ) / 2 );
-			float v = c.y * Sqrt( 1 - ( c.x * c.x ) / 2 );
+			c.X = c.X.ClampNeg1to1();
+			c.Y = c.Y.ClampNeg1to1();
+			float u = c.X * Sqrt( 1 - ( c.Y * c.Y ) / 2 );
+			float v = c.Y * Sqrt( 1 - ( c.X * c.X ) / 2 );
 			return new Vector2( u, v );
 		}
 
@@ -1439,13 +1456,13 @@ namespace Freya {
 		/// <param name="c">The input position inside the circle</param>
 		public static Vector2 DiscToSquare( Vector2 c ) {
 			c = c.ClampMagnitude( 0, 1 );
-			float u2 = c.x * c.x;
-			float v2 = c.y * c.y;
+			float u2 = c.X * c.X;
+			float v2 = c.Y * c.Y;
 			Vector2 n = new Vector2( 1, -1 );
 			Vector2 p = new Vector2( 2, 2 ) + n * ( u2 - v2 );
 			Vector2 q = 2 * SQRT2 * c;
-			Vector2 smolVec = Vector2.one * 0.0001f;
-			return 0.5f * ( Vector2.Max( smolVec, p + q ).Sqrt() - Vector2.Max( smolVec, p - q ).Sqrt() );
+			Vector2 smolVec = Vector2.One * 0.0001f;
+			return 0.5f * ( smolVec.Max( p + q ).Sqrt() - smolVec.Max( p - q ).Sqrt() );
 		}
 
 		#endregion

@@ -1,6 +1,10 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
+using Vector4 = Godot.Vector4;
+using Quaternion = Godot.Quaternion;
 
 namespace Freya {
 
@@ -15,7 +19,7 @@ namespace Freya {
 		[MethodImpl( INLINE )] public static V VecFromLineToPoint<V, VM>( this VM vm, V o, V n, V p ) where VM : struct, IVectorMath<V> => vm.VecReject( vm.Sub( p, o ), n );
 		[MethodImpl( INLINE )] public static float SqDistFromPointToLine<V, VM>( this VM vm, V o, V n, V p ) where VM : struct, IVectorMath<V> => vm.SqMag( vm.VecFromLineToPoint( o, n, p ) );
 		[MethodImpl( INLINE )] public static V GetPointAlongLine<V, VM>( this VM vm, V o, V n, float t ) where VM : struct, IVectorMath<V> => vm.Add( o, vm.Mul( n, t ) );
-		[MethodImpl( INLINE )] public static float ProjPointToLineSegmentTValue<V, VM>( this VM vm, V a, V b, V p ) where VM : struct, IVectorMath<V> => Mathf.Clamp01( vm.ProjPointToLineTValue( a, vm.Sub( b, a ), p ) );
+		[MethodImpl( INLINE )] public static float ProjPointToLineSegmentTValue<V, VM>( this VM vm, V a, V b, V p ) where VM : struct, IVectorMath<V> => Math.Clamp(vm.ProjPointToLineTValue( a, vm.Sub( b, a ), p ), 0, 1);
 		[MethodImpl( INLINE )] public static float ProjPointToLineTValue<V, VM>( this VM vm, V o, V n, V p ) where VM : struct, IVectorMath<V> => vm.BasisProject( vm.Sub( p, o ), n );
 		[MethodImpl( INLINE )] public static V ProjPointToLine<V, VM>( this VM vm, V o, V n, V p ) where VM : struct, IVectorMath<V> => vm.Add( o, vm.VecProject( vm.Sub( p, o ), n ) );
 
@@ -98,12 +102,12 @@ namespace Freya {
 	public struct VectorMath2D : IVectorMath<Vector2> {
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 		[MethodImpl( INLINE )] public Vector2 Zero() => new(0, 0);
-		[MethodImpl( INLINE )] public Vector2 Add( Vector2 a, Vector2 b ) => new(a.x + b.x, a.y + b.y);
-		[MethodImpl( INLINE )] public Vector2 Sub( Vector2 a, Vector2 b ) => new(a.x - b.x, a.y - b.y);
-		[MethodImpl( INLINE )] public Vector2 Mul( Vector2 v, float c ) => new(v.x * c, v.y * c);
-		[MethodImpl( INLINE )] public Vector2 Mul( float c, Vector2 v ) => new(v.x * c, v.y * c);
-		[MethodImpl( INLINE )] public Vector2 Div( Vector2 v, float c ) => new(v.x / c, v.y / c);
-		[MethodImpl( INLINE )] public float Dot( Vector2 a, Vector2 b ) => a.x * b.x + a.y * b.y;
+		[MethodImpl( INLINE )] public Vector2 Add( Vector2 a, Vector2 b ) => new(a.X + b.X, a.Y + b.Y);
+		[MethodImpl( INLINE )] public Vector2 Sub( Vector2 a, Vector2 b ) => new(a.X - b.X, a.Y - b.Y);
+		[MethodImpl( INLINE )] public Vector2 Mul( Vector2 v, float c ) => new(v.X * c, v.Y * c);
+		[MethodImpl( INLINE )] public Vector2 Mul( float c, Vector2 v ) => new(v.X * c, v.Y * c);
+		[MethodImpl( INLINE )] public Vector2 Div( Vector2 v, float c ) => new(v.X / c, v.Y / c);
+		[MethodImpl( INLINE )] public float Dot( Vector2 a, Vector2 b ) => a.X * b.X + a.Y * b.Y;
 		[MethodImpl( INLINE )] public float Mag( Vector2 v ) => MathF.Sqrt( Dot( v, v ) );
 		[MethodImpl( INLINE )] public float Dist( Vector2 a, Vector2 b ) => Mag( Sub( b, a ) );
 		[MethodImpl( INLINE )] public Vector2 Normalize( Vector2 v ) => Div( v, Mag( v ) );
@@ -111,7 +115,7 @@ namespace Freya {
 		// shared implementations
 		[MethodImpl( INLINE )] public Vector2 Lerp( Vector2 a, Vector2 b, float t ) {
 			float omt = 1f - t;
-			return new Vector2( omt * a.x + t * b.x, omt * a.y + t * b.y );
+			return new Vector2( omt * a.X + t * b.X, omt * a.Y + t * b.Y );
 		}
 
 	}
@@ -119,12 +123,12 @@ namespace Freya {
 	public struct VectorMath3D : IVectorMath<Vector3> {
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 		[MethodImpl( INLINE )] public Vector3 Zero() => new(0, 0, 0);
-		[MethodImpl( INLINE )] public Vector3 Add( Vector3 a, Vector3 b ) => new(a.x + b.x, a.y + b.y, a.z + b.z);
-		[MethodImpl( INLINE )] public Vector3 Sub( Vector3 a, Vector3 b ) => new(a.x - b.x, a.y - b.y, a.z - b.z);
-		[MethodImpl( INLINE )] public Vector3 Mul( Vector3 v, float c ) => new(v.x * c, v.y * c, v.z * c);
-		[MethodImpl( INLINE )] public Vector3 Mul( float c, Vector3 v ) => new(v.x * c, v.y * c, v.z * c);
-		[MethodImpl( INLINE )] public Vector3 Div( Vector3 v, float c ) => new(v.x / c, v.y / c, v.z / c);
-		[MethodImpl( INLINE )] public float Dot( Vector3 a, Vector3 b ) => a.x * b.x + a.y * b.y + a.z * b.z;
+		[MethodImpl( INLINE )] public Vector3 Add( Vector3 a, Vector3 b ) => new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+		[MethodImpl( INLINE )] public Vector3 Sub( Vector3 a, Vector3 b ) => new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+		[MethodImpl( INLINE )] public Vector3 Mul( Vector3 v, float c ) => new(v.X * c, v.Y * c, v.Z * c);
+		[MethodImpl( INLINE )] public Vector3 Mul( float c, Vector3 v ) => new(v.X * c, v.Y * c, v.Z * c);
+		[MethodImpl( INLINE )] public Vector3 Div( Vector3 v, float c ) => new(v.X / c, v.Y / c, v.Z / c);
+		[MethodImpl( INLINE )] public float Dot( Vector3 a, Vector3 b ) => a.X * b.X + a.Y * b.Y + a.Z * b.Z;
 		[MethodImpl( INLINE )] public float Mag( Vector3 v ) => MathF.Sqrt( Dot( v, v ) );
 		[MethodImpl( INLINE )] public float Dist( Vector3 a, Vector3 b ) => Mag( Sub( b, a ) );
 		[MethodImpl( INLINE )] public Vector3 Normalize( Vector3 v ) => Div( v, Mag( v ) );
@@ -132,19 +136,19 @@ namespace Freya {
 		// shared implementations
 		[MethodImpl( INLINE )] public Vector3 Lerp( Vector3 a, Vector3 b, float t ) {
 			float omt = 1f - t;
-			return new Vector3( omt * a.x + t * b.x, omt * a.y + t * b.y, omt * a.z + t * b.z );
+			return new Vector3( omt * a.X + t * b.X, omt * a.Y + t * b.Y, omt * a.Z + t * b.Z );
 		}
 	}
 
 	public struct VectorMath4D : IVectorMath<Vector4> {
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 		[MethodImpl( INLINE )] public Vector4 Zero() => new(0, 0, 0, 0);
-		[MethodImpl( INLINE )] public Vector4 Add( Vector4 a, Vector4 b ) => new(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
-		[MethodImpl( INLINE )] public Vector4 Sub( Vector4 a, Vector4 b ) => new(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-		[MethodImpl( INLINE )] public Vector4 Mul( Vector4 v, float c ) => new(v.x * c, v.y * c, v.z * c, v.w * c);
-		[MethodImpl( INLINE )] public Vector4 Mul( float c, Vector4 v ) => new(v.x * c, v.y * c, v.z * c, v.w * c);
-		[MethodImpl( INLINE )] public Vector4 Div( Vector4 v, float c ) => new(v.x / c, v.y / c, v.z / c, v.w / c);
-		[MethodImpl( INLINE )] public float Dot( Vector4 a, Vector4 b ) => a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+		[MethodImpl( INLINE )] public Vector4 Add( Vector4 a, Vector4 b ) => new(a.X + b.X, a.Y + b.Y, a.Z + b.Z, a.W + b.W);
+		[MethodImpl( INLINE )] public Vector4 Sub( Vector4 a, Vector4 b ) => new(a.X - b.X, a.Y - b.Y, a.Z - b.Z, a.W - b.W);
+		[MethodImpl( INLINE )] public Vector4 Mul( Vector4 v, float c ) => new(v.X * c, v.Y * c, v.Z * c, v.W * c);
+		[MethodImpl( INLINE )] public Vector4 Mul( float c, Vector4 v ) => new(v.X * c, v.Y * c, v.Z * c, v.W * c);
+		[MethodImpl( INLINE )] public Vector4 Div( Vector4 v, float c ) => new(v.X / c, v.Y / c, v.Z / c, v.W / c);
+		[MethodImpl( INLINE )] public float Dot( Vector4 a, Vector4 b ) => a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;
 		[MethodImpl( INLINE )] public float Mag( Vector4 v ) => MathF.Sqrt( Dot( v, v ) );
 		[MethodImpl( INLINE )] public float Dist( Vector4 a, Vector4 b ) => Mag( Sub( b, a ) );
 		[MethodImpl( INLINE )] public Vector4 Normalize( Vector4 v ) => Div( v, Mag( v ) );
@@ -152,7 +156,7 @@ namespace Freya {
 		// shared implementations
 		[MethodImpl( INLINE )] public Vector4 Lerp( Vector4 a, Vector4 b, float t ) {
 			float omt = 1f - t;
-			return new Vector4( omt * a.x + t * b.x, omt * a.y + t * b.y, omt * a.z + t * b.z, omt * a.w + t * b.w );
+			return new Vector4( omt * a.X + t * b.X, omt * a.Y + t * b.Y, omt * a.Z + t * b.Z, omt * a.W + t * b.W );
 		}
 	}
 
@@ -160,12 +164,12 @@ namespace Freya {
 	public struct VectorMathQuat : IVectorMath<Quaternion> {
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 		[MethodImpl( INLINE )] public Quaternion Zero() => new(0, 0, 0, 0);
-		[MethodImpl( INLINE )] public Quaternion Add( Quaternion a, Quaternion b ) => new(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
-		[MethodImpl( INLINE )] public Quaternion Sub( Quaternion a, Quaternion b ) => new(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-		[MethodImpl( INLINE )] public Quaternion Mul( Quaternion v, float c ) => new(v.x * c, v.y * c, v.z * c, v.w * c);
-		[MethodImpl( INLINE )] public Quaternion Mul( float c, Quaternion v ) => new(v.x * c, v.y * c, v.z * c, v.w * c);
-		[MethodImpl( INLINE )] public Quaternion Div( Quaternion v, float c ) => new(v.x / c, v.y / c, v.z / c, v.w / c);
-		[MethodImpl( INLINE )] public float Dot( Quaternion a, Quaternion b ) => a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+		[MethodImpl( INLINE )] public Quaternion Add( Quaternion a, Quaternion b ) => new(a.X + b.X, a.Y + b.Y, a.Z + b.Z, a.W + b.W);
+		[MethodImpl( INLINE )] public Quaternion Sub( Quaternion a, Quaternion b ) => new(a.X - b.X, a.Y - b.Y, a.Z - b.Z, a.W - b.W);
+		[MethodImpl( INLINE )] public Quaternion Mul( Quaternion v, float c ) => new(v.X * c, v.Y * c, v.Z * c, v.W * c);
+		[MethodImpl( INLINE )] public Quaternion Mul( float c, Quaternion v ) => new(v.X * c, v.Y * c, v.Z * c, v.W * c);
+		[MethodImpl( INLINE )] public Quaternion Div( Quaternion v, float c ) => new(v.X / c, v.Y / c, v.Z / c, v.W / c);
+		[MethodImpl( INLINE )] public float Dot( Quaternion a, Quaternion b ) => a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;
 		[MethodImpl( INLINE )] public float Mag( Quaternion v ) => MathF.Sqrt( Dot( v, v ) );
 		[MethodImpl( INLINE )] public float Dist( Quaternion a, Quaternion b ) => Mathfs.Angle( a, b );
 		[MethodImpl( INLINE )] public Quaternion Normalize( Quaternion v ) => Div( v, Mag( v ) );
@@ -173,7 +177,7 @@ namespace Freya {
 		// shared implementations
 		[MethodImpl( INLINE )] public Quaternion Lerp( Quaternion a, Quaternion b, float t ) {
 			float omt = 1f - t;
-			return new Quaternion( omt * a.x + t * b.x, omt * a.y + t * b.y, omt * a.z + t * b.z, omt * a.w + t * b.w );
+			return new Quaternion( omt * a.X + t * b.X, omt * a.Y + t * b.Y, omt * a.Z + t * b.Z, omt * a.W + t * b.W );
 		}
 	}
 

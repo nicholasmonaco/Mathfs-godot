@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -12,7 +13,7 @@ namespace Freya {
 
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-		[SerializeField] Vector2Matrix4x1 pointMatrix;
+		[Export] Vector2Matrix4x1 pointMatrix;
 		[NonSerialized] Polynomial2D curve;
 		[NonSerialized] bool validCoefficients;
 
@@ -62,7 +63,7 @@ namespace Freya {
 
 		/// <summary>Returns this spline segment in 3D, where z = 0</summary>
 		/// <param name="curve2D">The 2D curve to cast to 3D</param>
-		public static explicit operator BezierCubic3D( BezierCubic2D curve2D ) => new BezierCubic3D( curve2D.P0, curve2D.P1, curve2D.P2, curve2D.P3 );
+		public static explicit operator BezierCubic3D( BezierCubic2D curve2D ) => new BezierCubic3D( curve2D.P0.ToVector3(), curve2D.P1.ToVector3(), curve2D.P2.ToVector3(), curve2D.P3.ToVector3() );
 		public static explicit operator HermiteCubic2D( BezierCubic2D s ) =>
 			new HermiteCubic2D(
 				s.P0,
@@ -90,10 +91,10 @@ namespace Freya {
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static BezierCubic2D Lerp( BezierCubic2D a, BezierCubic2D b, float t ) =>
 			new(
-				Vector2.LerpUnclamped( a.P0, b.P0, t ),
-				Vector2.LerpUnclamped( a.P1, b.P1, t ),
-				Vector2.LerpUnclamped( a.P2, b.P2, t ),
-				Vector2.LerpUnclamped( a.P3, b.P3, t )
+				CoreUtil.LerpUnclamped( a.P0, b.P0, t ),
+				CoreUtil.LerpUnclamped( a.P1, b.P1, t ),
+				CoreUtil.LerpUnclamped( a.P2, b.P2, t ),
+				CoreUtil.LerpUnclamped( a.P3, b.P3, t )
 			);
 
 		/// <summary>Returns a linear blend between two bézier curves, where the tangent directions are spherically interpolated</summary>
@@ -101,12 +102,12 @@ namespace Freya {
 		/// <param name="b">The second spline segment</param>
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static BezierCubic2D Slerp( BezierCubic2D a, BezierCubic2D b, float t ) {
-			Vector2 P0 = Vector2.LerpUnclamped( a.P0, b.P0, t );
-			Vector2 P3 = Vector2.LerpUnclamped( a.P3, b.P3, t );
+			Vector2 P0 = CoreUtil.LerpUnclamped( a.P0, b.P0, t );
+			Vector2 P3 = CoreUtil.LerpUnclamped( a.P3, b.P3, t );
 			return new BezierCubic2D(
 				P0,
-				P0 + (Vector2)Vector3.SlerpUnclamped( a.P1 - a.P0, b.P1 - b.P0, t ),
-				P3 + (Vector2)Vector3.SlerpUnclamped( a.P2 - a.P3, b.P2 - b.P3, t ),
+				P0 + CoreUtil.SlerpUnclamped( (a.P1 - a.P0).ToVector3(), (b.P1 - b.P0).ToVector3(), t ).ToVector2(),
+				P3 + CoreUtil.SlerpUnclamped( (a.P2 - a.P3).ToVector3(), (b.P2 - b.P3).ToVector3(), t ).ToVector2(),
 				P3
 			);
 		}
@@ -114,23 +115,23 @@ namespace Freya {
 		/// <param name="t">The t-value to split at</param>
 		public (BezierCubic2D pre, BezierCubic2D post) Split( float t ) {
 			Vector2 a = new Vector2(
-				P0.x + ( P1.x - P0.x ) * t,
-				P0.y + ( P1.y - P0.y ) * t );
+				P0.X + ( P1.X - P0.X ) * t,
+				P0.Y + ( P1.Y - P0.Y ) * t );
 			Vector2 b = new Vector2(
-				P1.x + ( P2.x - P1.x ) * t,
-				P1.y + ( P2.y - P1.y ) * t );
+				P1.X + ( P2.X - P1.X ) * t,
+				P1.Y + ( P2.Y - P1.Y ) * t );
 			Vector2 c = new Vector2(
-				P2.x + ( P3.x - P2.x ) * t,
-				P2.y + ( P3.y - P2.y ) * t );
+				P2.X + ( P3.X - P2.X ) * t,
+				P2.Y + ( P3.Y - P2.Y ) * t );
 			Vector2 d = new Vector2(
-				a.x + ( b.x - a.x ) * t,
-				a.y + ( b.y - a.y ) * t );
+				a.X + ( b.X - a.X ) * t,
+				a.Y + ( b.Y - a.Y ) * t );
 			Vector2 e = new Vector2(
-				b.x + ( c.x - b.x ) * t,
-				b.y + ( c.y - b.y ) * t );
+				b.X + ( c.X - b.X ) * t,
+				b.Y + ( c.Y - b.Y ) * t );
 			Vector2 p = new Vector2(
-				d.x + ( e.x - d.x ) * t,
-				d.y + ( e.y - d.y ) * t );
+				d.X + ( e.X - d.X ) * t,
+				d.Y + ( e.Y - d.Y ) * t );
 			return ( new BezierCubic2D( P0, a, d, p ), new BezierCubic2D( p, e, c, P3 ) );
 		}
 	}

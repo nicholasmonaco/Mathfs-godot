@@ -2,7 +2,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector3 = Godot.Vector3;
+
 using Plane = System.Numerics.Plane;
 
 namespace Freya {
@@ -30,15 +32,15 @@ namespace Freya {
 
 		/// <summary>Returns the normalized direction of this line. Equivalent to <c>(end-start).normalized</c></summary>
 		public Vector3 Direction {
-			[MethodImpl( INLINE )] get => Displacement.normalized;
+			[MethodImpl( INLINE )] get => Displacement.Normalized();
 		}
 
 		/// <summary>Calculates the length of the line segment</summary>
 		public float Length {
 			[MethodImpl( INLINE )] get {
-				float dx = end.x - start.x;
-				float dy = end.y - start.y;
-				float dz = end.z - start.z;
+				float dx = end.X - start.X;
+				float dy = end.Y - start.Y;
+				float dz = end.Z - start.Z;
 				return (float)Math.Sqrt( dx * dx + dy * dy + dz * dz );
 			}
 		}
@@ -46,9 +48,9 @@ namespace Freya {
 		/// <summary>Calculates the length squared (faster than calculating the actual length)</summary>
 		public float LengthSquared {
 			[MethodImpl( INLINE )] get {
-				float dx = end.x - start.x;
-				float dy = end.y - start.y;
-				float dz = end.z - start.z;
+				float dx = end.X - start.X;
+				float dy = end.Y - start.Y;
+				float dz = end.Z - start.Z;
 				return dx * dx + dy * dy + dz * dz;
 			}
 		}
@@ -61,7 +63,7 @@ namespace Freya {
 		/// <summary>Returns the perpendicular bisector of the input line segment</summary>
 		/// <param name="startPoint">Starting point of the line segment</param>
 		/// <param name="endPoint">Endpoint of the line segment</param>
-		[MethodImpl( INLINE )] public static Plane3D GetBisector( Vector3 startPoint, Vector3 endPoint ) => new Plane3D( ( endPoint - startPoint ).normalized, ( endPoint + startPoint ) / 2 );
+		[MethodImpl( INLINE )] public static Plane3D GetBisector( Vector3 startPoint, Vector3 endPoint ) => new Plane3D( ( endPoint - startPoint ).Normalized(), ( endPoint + startPoint ) / 2 );
 
 		#region Interface stuff for generic line tests
 

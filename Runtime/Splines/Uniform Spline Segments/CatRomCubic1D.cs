@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -12,7 +13,7 @@ namespace Freya {
 
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-		[SerializeField] Matrix4x1 pointMatrix;
+		[Export] Matrix4x1 pointMatrix;
 		[NonSerialized] Polynomial curve;
 		[NonSerialized] bool validCoefficients;
 

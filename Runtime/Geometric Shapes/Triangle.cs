@@ -1,7 +1,10 @@
 ﻿// by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
 using System;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+using Vector3 = Godot.Vector3;
+
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -66,28 +69,28 @@ namespace Freya {
 		/// <param name="a">The first vertex in the triangle</param>
 		/// <param name="b">The second vertex in the triangle</param>
 		/// <param name="c">The third vertex in the triangle</param>
-		public Triangle3D( Vector2 a, Vector2 b, Vector2 c ) => ( this.a, this.b, this.c ) = ( a, b, c );
+		public Triangle3D( Vector2 a, Vector2 b, Vector2 c ) => ( this.a, this.b, this.c ) = ( a.ToVector3(), b.ToVector3(), c.ToVector3() );
 
 		/// <summary>Returns a control point position by index. Valid indices: 0, 1, 2 or 3</summary>
 		public Vector2 this[ int i ] {
 			get {
 				switch( i ) {
-					case 0:  return a;
-					case 1:  return b;
-					case 2:  return c;
+					case 0:  return a.ToVector2();
+					case 1:  return b.ToVector2();
+					case 2:  return c.ToVector2();
 					default: throw new ArgumentOutOfRangeException( nameof(i), $"Index has to be in the 0 to 2 range, and I think {i} is outside that range you know" );
 				}
 			}
 			set {
 				switch( i ) {
 					case 0:
-						a = value;
+						a = value.ToVector3();
 						break;
 					case 1:
-						b = value;
+						b = value.ToVector3();
 						break;
 					case 2:
-						c = value;
+						c = value.ToVector3();
 						break;
 					default: throw new ArgumentOutOfRangeException( nameof(i), $"Index has to be in the 0 to 2 range, and I think {i} is outside that range you know" );
 				}
@@ -109,7 +112,7 @@ namespace Freya {
 
 	public partial struct Triangle3D {
 		/// <inheritdoc cref="Freya.Triangle2D.Area"/>
-		public float Area => Vector3.Cross( b - a, c - a ).magnitude / 2f;
+		public float Area => (b - a).Cross( c - a ).Length() / 2f;
 	}
 
 	#endregion
@@ -126,9 +129,9 @@ namespace Freya {
 		/// This is also the center of the incircle, the largest circle that can fit in the triangle.</summary>
 		public Vector2 Incenter {
 			get {
-				float bc = Vector2.Distance( b, c );
-				float ca = Vector2.Distance( c, a );
-				float ab = Vector2.Distance( a, b );
+				float bc = b.DistanceTo( c );
+				float ca = c.DistanceTo( a );
+				float ab = a.DistanceTo( b );
 				return ( bc * a + ca * b + ab * c ) / ( bc + ca + ab );
 			}
 		}
@@ -166,9 +169,9 @@ namespace Freya {
 		/// <inheritdoc cref="Triangle2D.Incenter"/>
 		public Vector3 Incenter {
 			get {
-				float bc = Vector3.Distance( b, c );
-				float ca = Vector3.Distance( c, a );
-				float ab = Vector3.Distance( a, b );
+				float bc = b.DistanceTo( c );
+				float ca = c.DistanceTo( a );
+				float ab = a.DistanceTo( b );
 				return ( bc * a + ca * b + ab * c ) / ( bc + ca + ab );
 			}
 		}
@@ -252,13 +255,13 @@ namespace Freya {
 		}
 
 		/// <summary>The length of the edge opposite to vertex A</summary>
-		public float EdgeA => Vector2.Distance( c, b );
+		public float EdgeA => c.DistanceTo( b );
 
 		/// <summary>The length of the edge opposite to vertex B</summary>
-		public float EdgeB => Vector2.Distance( a, c );
+		public float EdgeB => a.DistanceTo( c );
 
 		/// <summary>The length of the edge opposite to vertex C</summary>
-		public float EdgeC => Vector2.Distance( b, a );
+		public float EdgeC => b.DistanceTo( a );
 
 		/// <summary>The perimeter of the triangle, equivalent to the sum of all edge lengths</summary>
 		public float Perimeter => EdgeA + EdgeB + EdgeC;
@@ -278,13 +281,13 @@ namespace Freya {
 		}
 
 		/// <inheritdoc cref="Triangle2D.EdgeA"/>
-		public float EdgeA => Vector3.Distance( c, b );
+		public float EdgeA => c.DistanceTo( b );
 
 		/// <inheritdoc cref="Triangle2D.EdgeB"/>
-		public float EdgeB => Vector3.Distance( a, c );
+		public float EdgeB => a.DistanceTo( c );
 
 		/// <inheritdoc cref="Triangle2D.EdgeC"/>
-		public float EdgeC => Vector3.Distance( b, a );
+		public float EdgeC => b.DistanceTo( a );
 
 		/// <inheritdoc cref="Triangle2D.Perimeter"/>
 		public float Perimeter => EdgeA + EdgeB + EdgeC;
@@ -320,11 +323,11 @@ namespace Freya {
 		/// <summary>The angles of each vertex. The sum of these is always half a turn = tau/2 = pi</summary>
 		public (float angA, float angB, float angC) Angles {
 			get {
-				Vector2 abDir = ( b - a ).normalized;
-				Vector2 acDir = ( c - a ).normalized;
-				Vector2 bcDir = ( c - b ).normalized;
-				float angA = MathF.Acos( Vector2.Dot( abDir, acDir ).ClampNeg1to1() );
-				float angB = MathF.Acos( Vector2.Dot( -abDir, bcDir ).ClampNeg1to1() );
+				Vector2 abDir = ( b - a ).Normalized();
+				Vector2 acDir = ( c - a ).Normalized();
+				Vector2 bcDir = ( c - b ).Normalized();
+				float angA = MathF.Acos( abDir.Dot( acDir ).ClampNeg1to1() );
+				float angB = MathF.Acos( (-abDir).Dot( bcDir ).ClampNeg1to1() );
 				float angC = PI - angA - angB;
 				return ( angA, angB, angC );
 			}
@@ -372,11 +375,11 @@ namespace Freya {
 		/// <inheritdoc cref="Triangle2D.Angles"/>
 		public (float angA, float angB, float angC) Angles {
 			get {
-				Vector2 abDir = ( b - a ).normalized;
-				Vector2 acDir = ( c - a ).normalized;
-				Vector2 bcDir = ( c - b ).normalized;
-				float angA = MathF.Acos( Vector2.Dot( abDir, acDir ).ClampNeg1to1() );
-				float angB = MathF.Acos( Vector2.Dot( -abDir, bcDir ).ClampNeg1to1() );
+				Vector2 abDir = ( b - a ).Normalized().ToVector2(); // Is this conversion to Vector2 in the proper order?
+				Vector2 acDir = ( c - a ).Normalized().ToVector2(); // Is this conversion to Vector2 in the proper order?
+				Vector2 bcDir = ( c - b ).Normalized().ToVector2(); // Is this conversion to Vector2 in the proper order?
+				float angA = MathF.Acos( abDir.Dot( acDir ).ClampNeg1to1() );
+				float angB = MathF.Acos( (-abDir).Dot( bcDir ).ClampNeg1to1() );
 				float angC = PI - angA - angB;
 				return ( angA, angB, angC );
 			}

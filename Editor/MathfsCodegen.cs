@@ -4,10 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using Debug = UnityEngine.Debug;
+
+// using UnityEditor;
+// using UnityEngine;
+// using UnityEngine.SceneManagement;
+// using Debug = UnityEngine.Debug;
+
+using Godot;
 
 namespace Freya {
 
@@ -95,49 +98,49 @@ namespace Freya {
 		#endregion
 
 		// [MenuItem( "Assets/Port Spline Data" )]
-		public static void PortSplineData() {
-			string replacements = "";
-			int replacementCount = 0;
-			GameObject[] gos = SceneManager.GetActiveScene().GetRootGameObjects();
-			foreach( GameObject go in gos ) {
-				foreach( Component c in go.GetComponentsInChildren<Component>( true ) ) {
-					SerializedObject so = new SerializedObject( c ); // can actually find null components??
-					so.Update();
-					bool madeChanges = false;
-					SerializedProperty prop = so.GetIterator();
-					while( prop.Next( true ) ) {
-						if( prop.isArray == false && IsSplineType( prop.type, out SplineType type, out int dim ) ) {
-							SerializedProperty ptMtx = prop.FindPropertyRelative( "pointMatrix" );
-							try {
-								if( dim == 1 )
-									for( int i = 0; i < type.paramNames.Length; i++ )
-										ptMtx.FindPropertyRelative( $"m{i}" ).floatValue = prop.FindPropertyRelative( type.paramNames[i] ).floatValue;
-								else if( dim == 2 )
-									for( int i = 0; i < type.paramNames.Length; i++ )
-										ptMtx.FindPropertyRelative( $"m{i}" ).vector2Value = prop.FindPropertyRelative( type.paramNames[i] ).vector2Value;
-								else if( dim == 3 )
-									for( int i = 0; i < type.paramNames.Length; i++ )
-										ptMtx.FindPropertyRelative( $"m{i}" ).vector3Value = prop.FindPropertyRelative( type.paramNames[i] ).vector3Value;
-								else if( dim == 4 )
-									for( int i = 0; i < type.paramNames.Length; i++ )
-										ptMtx.FindPropertyRelative( $"m{i}" ).vector4Value = prop.FindPropertyRelative( type.paramNames[i] ).vector4Value;
-							} catch {
-								Debug.LogError( $"Null thing in {go.name}/{c.GetType().Name}/{prop.propertyPath} of type {type.className} mtx: {type.matrixName}" );
-							}
+		// public static void PortSplineData() {
+		// 	string replacements = "";
+		// 	int replacementCount = 0;
+		// 	GameObject[] gos = SceneManager.GetActiveScene().GetRootGameObjects();
+		// 	foreach( GameObject go in gos ) {
+		// 		foreach( Component c in go.GetComponentsInChildren<Component>( true ) ) {
+		// 			SerializedObject so = new SerializedObject( c ); // can actually find null components??
+		// 			so.Update();
+		// 			bool madeChanges = false;
+		// 			SerializedProperty prop = so.GetIterator();
+		// 			while( prop.Next( true ) ) {
+		// 				if( prop.isArray == false && IsSplineType( prop.type, out SplineType type, out int dim ) ) {
+		// 					SerializedProperty ptMtx = prop.FindPropertyRelative( "pointMatrix" );
+		// 					try {
+		// 						if( dim == 1 )
+		// 							for( int i = 0; i < type.paramNames.Length; i++ )
+		// 								ptMtx.FindPropertyRelative( $"m{i}" ).floatValue = prop.FindPropertyRelative( type.paramNames[i] ).floatValue;
+		// 						else if( dim == 2 )
+		// 							for( int i = 0; i < type.paramNames.Length; i++ )
+		// 								ptMtx.FindPropertyRelative( $"m{i}" ).vector2Value = prop.FindPropertyRelative( type.paramNames[i] ).vector2Value;
+		// 						else if( dim == 3 )
+		// 							for( int i = 0; i < type.paramNames.Length; i++ )
+		// 								ptMtx.FindPropertyRelative( $"m{i}" ).vector3Value = prop.FindPropertyRelative( type.paramNames[i] ).vector3Value;
+		// 						else if( dim == 4 )
+		// 							for( int i = 0; i < type.paramNames.Length; i++ )
+		// 								ptMtx.FindPropertyRelative( $"m{i}" ).vector4Value = prop.FindPropertyRelative( type.paramNames[i] ).vector4Value;
+		// 					} catch {
+		// 						GD.PrintErr( $"Null thing in {go.name}/{c.GetType().Name}/{prop.propertyPath} of type {type.className} mtx: {type.matrixName}" );
+		// 					}
 
-							madeChanges = true;
-							replacements += $"Replaced: {go.name}/{c.GetType().Name}: {prop.displayName}\n";
-							replacementCount++;
-						}
-					}
+		// 					madeChanges = true;
+		// 					replacements += $"Replaced: {go.name}/{c.GetType().Name}: {prop.displayName}\n";
+		// 					replacementCount++;
+		// 				}
+		// 			}
 
-					if( madeChanges )
-						so.ApplyModifiedProperties();
-				}
-			}
+		// 			if( madeChanges )
+		// 				so.ApplyModifiedProperties();
+		// 		}
+		// 	}
 
-			Debug.Log( $"{replacementCount} replacements:\n{replacements}" );
-		}
+		// 	GD.Print( $"{replacementCount} replacements:\n{replacements}" );
+		// }
 
 		static bool IsSplineType( string name, out SplineType type, out int dim ) {
 			foreach( SplineType spline in allSplineTypes ) {
@@ -164,7 +167,9 @@ namespace Freya {
 
 		static ElemType GetVectorOfDim( int dim ) => (ElemType)dim;
 
-		[MenuItem( "Assets/Run Mathfs Codegen" )]
+		const string LocalPath = "addons";
+
+		// [MenuItem( "Assets/Run Mathfs Codegen" )]
 		public static void Regenerate() {
 			for( int dim = 1; dim < 5; dim++ ) { // 1D, 2D, 3D, 4D
 				GenerateUniformSplineType( typeBezier, dim );
@@ -181,10 +186,10 @@ namespace Freya {
 		static string GetLerpName( ElemType dim ) {
 			return dim switch {
 				ElemType._1D  => "Mathfs.Lerp",
-				ElemType._2D  => "Vector2.LerpUnclamped",
-				ElemType._3D  => "Vector3.LerpUnclamped",
-				ElemType._4D  => "Vector4.LerpUnclamped",
-				ElemType.Quat => "Quaternion.SlerpUnclamped",
+				ElemType._2D  => "CoreUtil.LerpUnclamped",
+				ElemType._3D  => "CoreUtil.LerpUnclamped",
+				ElemType._4D  => "CoreUtil.LerpUnclamped",
+				ElemType.Quat => "CoreUtil.SlerpUnclamped",
 				_             => throw new IndexOutOfRangeException()
 			};
 		}
@@ -220,7 +225,7 @@ namespace Freya {
 			code.AppendHeader();
 			code.Append( "using System;" );
 			if( dim != ElemType._1D ) // for Vector2/3
-				code.Append( "using UnityEngine;" );
+				code.Append( "using Godot;" );
 
 			using( code.BracketScope( "namespace Freya" ) ) {
 				code.Summary( $"A {count}x1 column matrix with {elemType} values" );
@@ -274,7 +279,7 @@ namespace Freya {
 			}
 
 			// save/finalize
-			string path = $"Assets/Spline Plugin/Mathfs/Runtime/Numerics/{typeName}.cs";
+			string path = $"{LocalPath}/Mathfs/Runtime/Numerics/{typeName}.cs";
 			File.WriteAllLines( path, code.content );
 		}
 
@@ -302,7 +307,7 @@ namespace Freya {
 			code.AppendHeader();
 			code.Using( "System" );
 			code.Using( "System.Runtime.CompilerServices" );
-			code.Using( "UnityEngine" );
+			code.Using( "Godot" );
 			code.LineBreak();
 
 			using( code.BracketScope( "namespace Freya" ) ) {
@@ -316,7 +321,7 @@ namespace Freya {
 					code.LineBreak();
 
 					// fields
-					code.Append( $"[SerializeField] {pointMatrixType} pointMatrix;" );
+					code.Append( $"[Export] {pointMatrixType} pointMatrix;" );
 					code.Append( $"[NonSerialized] {polynomType} curve;" );
 					code.Append( "[NonSerialized] bool validCoefficients;" );
 					code.LineBreak();
@@ -466,8 +471,8 @@ namespace Freya {
 							code.Append( $"{dataType} P3 = {lerpName}( a.P3, b.P3, t );" );
 							using( code.Scope( $"return new {structName}(" ) ) {
 								code.Append( $"P0," );
-								code.Append( $"P0 + {slerpCast}Vector3.SlerpUnclamped( a.P1 - a.P0, b.P1 - b.P0, t )," );
-								code.Append( $"P3 + {slerpCast}Vector3.SlerpUnclamped( a.P2 - a.P3, b.P2 - b.P3, t )," );
+								code.Append( $"P0 + {slerpCast}CoreUtil.SlerpUnclamped( a.P1 - a.P0, b.P1 - b.P0, t )," );
+								code.Append( $"P3 + {slerpCast}CoreUtil.SlerpUnclamped( a.P2 - a.P3, b.P2 - b.P3, t )," );
 								code.Append( $"P3" );
 							}
 
@@ -487,7 +492,7 @@ namespace Freya {
 				}
 			}
 
-			string path = $"Assets/Spline Plugin/Mathfs/Runtime/Splines/Uniform Spline Segments/{structName}.cs";
+			string path = $"${LocalPath}/Mathfs/Runtime/Splines/Uniform Spline Segments/{structName}.cs";
 			File.WriteAllLines( path, code.content );
 		}
 
@@ -570,7 +575,7 @@ namespace Freya {
 			};
 		}
 
-		static readonly string[] comp = { "x", "y", "z", "w" };
+		static readonly string[] comp = { "X", "Y", "Z", "W" };
 
 		public static void AppendBezierSplit( CodeGenerator code, string structName, string dataType, int degree, int dim ) {
 			string LerpStr( string A, string B, int c ) => $"{A}.{comp[c]} + ( {B}.{comp[c]} - {A}.{comp[c]} ) * t";

@@ -3,8 +3,8 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
-using UnityEngine;
-using UnityEngine.Serialization;
+
+using Godot;
 
 namespace Freya {
 
@@ -19,17 +19,43 @@ namespace Freya {
 		/// <summary>A polynomial with all NaN coefficients</summary>
 		public static readonly Polynomial NaN = new Polynomial( float.NaN, float.NaN, float.NaN, float.NaN );
 
+
 		/// <summary>The constant coefficient</summary>
-		[FormerlySerializedAs( "fConstant" )] public float c0;
+		[Export] private float fConstant { 
+			get => c0;
+			set { c0 = value; }
+		}
 
 		/// <summary>The linear coefficient</summary>
-		[FormerlySerializedAs( "fLinear" )] public float c1;
+		[Export] private float fLinear { 
+			get => c1;
+			set { c1 = value; }
+		}
 
 		/// <summary>The quadratic coefficient</summary>
-		[FormerlySerializedAs( "fQuadratic" )] public float c2;
+		[Export] private float fQuadratic { 
+			get => c2;
+			set { c2 = value; }
+		}
 
 		/// <summary>The cubic coefficient</summary>
-		[FormerlySerializedAs( "fCubic" )] public float c3;
+		[Export] private float fCubic { 
+			get => c3;
+			set { c3 = value; }
+		}
+
+
+		/// <summary>The constant coefficient</summary>
+		public float c0;
+
+		/// <summary>The linear coefficient</summary>
+		public float c1;
+
+		/// <summary>The quadratic coefficient</summary>
+		public float c2;
+
+		/// <summary>The cubic coefficient</summary>
+		public float c3;
 
 		/// <summary>Creates a polynomial up to a cubic</summary>
 		/// <param name="c0">The constant coefficient</param>
@@ -51,7 +77,7 @@ namespace Freya {
 
 		/// <summary>Creates a polynomial</summary>
 		/// <param name="coefficients">The coefficients to use</param>
-		public Polynomial( Vector4 coefficients ) => ( c0, c1, c2, c3 ) = ( coefficients.x, coefficients.y, coefficients.z, coefficients.w );
+		public Polynomial( Vector4 coefficients ) => ( c0, c1, c2, c3 ) = ( coefficients.X, coefficients.Y, coefficients.Z, coefficients.W );
 
 		/// <inheritdoc cref="Polynomial(Vector4)"/>
 		public Polynomial( Matrix4x1 coefficients ) => ( c0, c1, c2, c3 ) = ( coefficients.m0, coefficients.m1, coefficients.m2, coefficients.m3 );
@@ -296,7 +322,7 @@ namespace Freya {
 		/// <summary>Creates a linear polynomial of the form <c>ax+b</c> from two points a and b</summary>
 		/// <param name="a">The first point</param>
 		/// <param name="b">The second point</param>
-		public static Polynomial Linear( Vector2 a, Vector2 b ) => Linear( a.x, a.y, b.x, b.y );
+		public static Polynomial Linear( Vector2 a, Vector2 b ) => Linear( a.X, a.Y, b.X, b.Y );
 
 		/// <summary>Creates a linear polynomial of the form <c>ax+b</c> from two points</summary>
 		/// <param name="x0">The coordinate of the first point</param>

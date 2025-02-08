@@ -2,7 +2,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+using Vector4 = Godot.Vector4;
 
 namespace Freya {
 
@@ -19,26 +21,26 @@ namespace Freya {
 
 		/// <inheritdoc cref="Polynomial(float,float,float,float)"/>
 		public Polynomial4D( Vector4 c0, Vector4 c1, Vector4 c2, Vector4 c3 ) {
-			this.x = new Polynomial( c0.x, c1.x, c2.x, c3.x );
-			this.y = new Polynomial( c0.y, c1.y, c2.y, c3.y );
-			this.z = new Polynomial( c0.z, c1.z, c2.z, c3.z );
-			this.w = new Polynomial( c0.w, c1.w, c2.w, c3.w );
+			this.x = new Polynomial( c0.X, c1.X, c2.X, c3.X );
+			this.y = new Polynomial( c0.Y, c1.Y, c2.Y, c3.Y );
+			this.z = new Polynomial( c0.Z, c1.Z, c2.Z, c3.Z );
+			this.w = new Polynomial( c0.W, c1.W, c2.W, c3.W );
 		}
 
 		/// <inheritdoc cref="Polynomial(float,float,float)"/>
 		public Polynomial4D( Vector4 c0, Vector4 c1, Vector4 c2 ) {
-			this.x = new Polynomial( c0.x, c1.x, c2.x, 0 );
-			this.y = new Polynomial( c0.y, c1.y, c2.y, 0 );
-			this.z = new Polynomial( c0.z, c1.z, c2.z, 0 );
-			this.w = new Polynomial( c0.w, c1.w, c2.w, 0 );
+			this.x = new Polynomial( c0.X, c1.X, c2.X, 0 );
+			this.y = new Polynomial( c0.Y, c1.Y, c2.Y, 0 );
+			this.z = new Polynomial( c0.Z, c1.Z, c2.Z, 0 );
+			this.w = new Polynomial( c0.W, c1.W, c2.W, 0 );
 		}
 
 		/// <inheritdoc cref="Polynomial(float,float)"/>
 		public Polynomial4D( Vector4 c0, Vector4 c1 ) {
-			this.x = new Polynomial( c0.x, c1.x, 0, 0 );
-			this.y = new Polynomial( c0.y, c1.y, 0, 0 );
-			this.z = new Polynomial( c0.z, c1.z, 0, 0 );
-			this.w = new Polynomial( c0.w, c1.w, 0, 0 );
+			this.x = new Polynomial( c0.X, c1.X, 0, 0 );
+			this.y = new Polynomial( c0.Y, c1.Y, 0, 0 );
+			this.z = new Polynomial( c0.Z, c1.Z, 0, 0 );
+			this.w = new Polynomial( c0.W, c1.W, 0, 0 );
 		}
 
 		/// <inheritdoc cref="Polynomial(Matrix4x1)"/>
@@ -51,19 +53,19 @@ namespace Freya {
 
 		public Vector4 C0 {
 			[MethodImpl( INLINE )] get => new(x.c0, y.c0, z.c0, w.c0);
-			[MethodImpl( INLINE )] set => ( x.c0, y.c0, z.c0, w.c0 ) = ( value.x, value.y, value.z, value.w );
+			[MethodImpl( INLINE )] set => ( x.c0, y.c0, z.c0, w.c0 ) = ( value.X, value.Y, value.Z, value.W );
 		}
 		public Vector4 C1 {
 			[MethodImpl( INLINE )] get => new(x.c1, y.c1, z.c1, w.c1);
-			[MethodImpl( INLINE )] set => ( x.c1, y.c1, z.c1, w.c1 ) = ( value.x, value.y, value.z, value.w );
+			[MethodImpl( INLINE )] set => ( x.c1, y.c1, z.c1, w.c1 ) = ( value.X, value.Y, value.Z, value.W );
 		}
 		public Vector4 C2 {
 			[MethodImpl( INLINE )] get => new(x.c2, y.c2, z.c2, w.c2);
-			[MethodImpl( INLINE )] set => ( x.c2, y.c2, z.c2, w.c2 ) = ( value.x, value.y, value.z, value.w );
+			[MethodImpl( INLINE )] set => ( x.c2, y.c2, z.c2, w.c2 ) = ( value.X, value.Y, value.Z, value.W );
 		}
 		public Vector4 C3 {
 			[MethodImpl( INLINE )] get => new(x.c3, y.c3, z.c3, w.c3);
-			[MethodImpl( INLINE )] set => ( x.c3, y.c3, z.c3, w.c3 ) = ( value.x, value.y, value.z, value.w );
+			[MethodImpl( INLINE )] set => ( x.c3, y.c3, z.c3, w.c3 ) = ( value.X, value.Y, value.Z, value.W );
 		}
 
 		public Polynomial this[ int i ] {
@@ -146,28 +148,28 @@ namespace Freya {
 
 			// polynomial form
 			Vector4 c0 = new(
-				-( scl0.x * x1x2x3 ),
-				-( scl0.y * x1x2x3 ),
-				-( scl0.z * x1x2x3 ),
-				-( scl0.w * x1x2x3 )
+				-( scl0.X * x1x2x3 ),
+				-( scl0.Y * x1x2x3 ),
+				-( scl0.Z * x1x2x3 ),
+				-( scl0.W * x1x2x3 )
 			);
 			Vector4 c1 = new(
-				scl0.x * x1x2plusx1x3plusx2x3 + scl1.x * x2x3 + scl2.x * x1x3 + scl3.x * x1x2,
-				scl0.y * x1x2plusx1x3plusx2x3 + scl1.y * x2x3 + scl2.y * x1x3 + scl3.y * x1x2,
-				scl0.z * x1x2plusx1x3plusx2x3 + scl1.z * x2x3 + scl2.z * x1x3 + scl3.z * x1x2,
-				scl0.w * x1x2plusx1x3plusx2x3 + scl1.w * x2x3 + scl2.w * x1x3 + scl3.w * x1x2
+				scl0.X * x1x2plusx1x3plusx2x3 + scl1.X * x2x3 + scl2.X * x1x3 + scl3.X * x1x2,
+				scl0.Y * x1x2plusx1x3plusx2x3 + scl1.Y * x2x3 + scl2.Y * x1x3 + scl3.Y * x1x2,
+				scl0.Z * x1x2plusx1x3plusx2x3 + scl1.Z * x2x3 + scl2.Z * x1x3 + scl3.Z * x1x2,
+				scl0.W * x1x2plusx1x3plusx2x3 + scl1.W * x2x3 + scl2.W * x1x3 + scl3.W * x1x2
 			);
 			Vector4 c2 = new(
-				-( scl0.x * x1plusx2plusx3 + scl1.x * x2plusx3 + scl2.x * x0plusx1plusx3 + scl3.x * x0plusx1plusx2 ),
-				-( scl0.y * x1plusx2plusx3 + scl1.y * x2plusx3 + scl2.y * x0plusx1plusx3 + scl3.y * x0plusx1plusx2 ),
-				-( scl0.z * x1plusx2plusx3 + scl1.z * x2plusx3 + scl2.z * x0plusx1plusx3 + scl3.z * x0plusx1plusx2 ),
-				-( scl0.w * x1plusx2plusx3 + scl1.w * x2plusx3 + scl2.w * x0plusx1plusx3 + scl3.w * x0plusx1plusx2 )
+				-( scl0.X * x1plusx2plusx3 + scl1.X * x2plusx3 + scl2.X * x0plusx1plusx3 + scl3.X * x0plusx1plusx2 ),
+				-( scl0.Y * x1plusx2plusx3 + scl1.Y * x2plusx3 + scl2.Y * x0plusx1plusx3 + scl3.Y * x0plusx1plusx2 ),
+				-( scl0.Z * x1plusx2plusx3 + scl1.Z * x2plusx3 + scl2.Z * x0plusx1plusx3 + scl3.Z * x0plusx1plusx2 ),
+				-( scl0.W * x1plusx2plusx3 + scl1.W * x2plusx3 + scl2.W * x0plusx1plusx3 + scl3.W * x0plusx1plusx2 )
 			);
 			Vector4 c3 = new(
-				scl0.x + scl1.x + scl2.x + scl3.x,
-				scl0.y + scl1.y + scl2.y + scl3.y,
-				scl0.z + scl1.z + scl2.z + scl3.z,
-				scl0.w + scl1.w + scl2.w + scl3.w
+				scl0.X + scl1.X + scl2.X + scl3.X,
+				scl0.Y + scl1.Y + scl2.Y + scl3.Y,
+				scl0.Z + scl1.Z + scl2.Z + scl3.Z,
+				scl0.W + scl1.W + scl2.W + scl3.W
 			);
 
 			return new Polynomial4D( c0, c1, c2, c3 );
@@ -212,16 +214,16 @@ namespace Freya {
 		public Vector4 ProjectPoint( Vector4 point, out float t, int initialSubdivisions = 16, int refinementIterations = 4 ) {
 			// define a bezier relative to the test point
 			Polynomial4D curve = this;
-			curve.x.c0 -= point.x; // constant coefficient defines the start position
-			curve.y.c0 -= point.y;
-			curve.z.c0 -= point.z;
+			curve.x.c0 -= point.X; // constant coefficient defines the start position
+			curve.y.c0 -= point.Y;
+			curve.z.c0 -= point.Z;
 			Vector4 curveStart = curve.Eval( 0 );
 			Vector4 curveEnd = curve.Eval( 1 );
 
 			PointProjectSample SampleDistSqDelta( float tSmp ) {
 				PointProjectSample s = new PointProjectSample { t = tSmp };
 				( s.f, s.fp ) = ( curve.Eval( tSmp ), curve.EvalDerivative( tSmp ) );
-				s.distDeltaSq = Vector4.Dot( s.f, s.fp );
+				s.distDeltaSq = s.f.Dot( s.fp );
 				return s;
 			}
 
@@ -243,7 +245,7 @@ namespace Freya {
 			// refine each guess w. Newton-Raphson iterations
 			void Refine( ref PointProjectSample smp ) {
 				Vector4 fpp = curve.EvalSecondDerivative( smp.t );
-				float tNew = smp.t - Vector4.Dot( smp.f, smp.fp ) / ( Vector4.Dot( smp.f, fpp ) + Vector4.Dot( smp.fp, smp.fp ) );
+				float tNew = smp.t - smp.f.Dot( smp.fp ) / ( smp.f.Dot( fpp ) + smp.fp.Dot( smp.fp ) );
 				smp = SampleDistSqDelta( tNew );
 			}
 
@@ -252,8 +254,8 @@ namespace Freya {
 					Refine( ref pointProjectGuesses[p] );
 
 			// Now find closest. First include the endpoints
-			float sqDist0 = curveStart.sqrMagnitude; // include endpoints
-			float sqDist1 = curveEnd.sqrMagnitude;
+			float sqDist0 = curveStart.LengthSquared(); // include endpoints
+			float sqDist1 = curveEnd.LengthSquared();
 			bool firstClosest = sqDist0 < sqDist1;
 			float tClosest = firstClosest ? 0 : 1;
 			Vector4 ptClosest = ( firstClosest ? curveStart : curveEnd ) + point;
@@ -261,7 +263,7 @@ namespace Freya {
 
 			// then check internal roots
 			for( int i = 0; i < candidatesFound; i++ ) {
-				float pSqmag = pointProjectGuesses[i].f.sqrMagnitude;
+				float pSqmag = pointProjectGuesses[i].f.LengthSquared();
 				if( pSqmag < distSqClosest ) {
 					distSqClosest = pSqmag;
 					tClosest = pointProjectGuesses[i].t;

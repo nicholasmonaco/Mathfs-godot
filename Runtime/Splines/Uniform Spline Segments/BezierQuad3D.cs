@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -12,7 +13,7 @@ namespace Freya {
 
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-		[SerializeField] Vector3Matrix3x1 pointMatrix;
+		[Export] Vector3Matrix3x1 pointMatrix;
 		[NonSerialized] Polynomial3D curve;
 		[NonSerialized] bool validCoefficients;
 
@@ -62,25 +63,25 @@ namespace Freya {
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static BezierQuad3D Lerp( BezierQuad3D a, BezierQuad3D b, float t ) =>
 			new(
-				Vector3.LerpUnclamped( a.P0, b.P0, t ),
-				Vector3.LerpUnclamped( a.P1, b.P1, t ),
-				Vector3.LerpUnclamped( a.P2, b.P2, t )
+				CoreUtil.LerpUnclamped( a.P0, b.P0, t ),
+				CoreUtil.LerpUnclamped( a.P1, b.P1, t ),
+				CoreUtil.LerpUnclamped( a.P2, b.P2, t )
 			);
 		/// <summary>Splits this curve at the given t-value, into two curves that together form the exact same shape</summary>
 		/// <param name="t">The t-value to split at</param>
 		public (BezierQuad3D pre, BezierQuad3D post) Split( float t ) {
 			Vector3 a = new Vector3(
-				P0.x + ( P1.x - P0.x ) * t,
-				P0.y + ( P1.y - P0.y ) * t,
-				P0.z + ( P1.z - P0.z ) * t );
+				P0.X + ( P1.X - P0.X ) * t,
+				P0.Y + ( P1.Y - P0.Y ) * t,
+				P0.Z + ( P1.Z - P0.Z ) * t );
 			Vector3 b = new Vector3(
-				P1.x + ( P2.x - P1.x ) * t,
-				P1.y + ( P2.y - P1.y ) * t,
-				P1.z + ( P2.z - P1.z ) * t );
+				P1.X + ( P2.X - P1.X ) * t,
+				P1.Y + ( P2.Y - P1.Y ) * t,
+				P1.Z + ( P2.Z - P1.Z ) * t );
 			Vector3 p = new Vector3(
-				a.x + ( b.x - a.x ) * t,
-				a.y + ( b.y - a.y ) * t,
-				a.z + ( b.z - a.z ) * t );
+				a.X + ( b.X - a.X ) * t,
+				a.Y + ( b.Y - a.Y ) * t,
+				a.Z + ( b.Z - a.Z ) * t );
 			return ( new BezierQuad3D( P0, a, p ), new BezierQuad3D( p, b, P2 ) );
 		}
 	}

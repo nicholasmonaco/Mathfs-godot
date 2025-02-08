@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -12,7 +13,7 @@ namespace Freya {
 
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-		[SerializeField] Vector3Matrix4x1 pointMatrix;
+		[Export] Vector3Matrix4x1 pointMatrix;
 		[NonSerialized] Polynomial3D curve;
 		[NonSerialized] bool validCoefficients;
 
@@ -62,7 +63,7 @@ namespace Freya {
 
 		/// <summary>Returns this curve flattened to 2D. Effectively setting z = 0</summary>
 		/// <param name="curve3D">The 3D curve to flatten to the Z plane</param>
-		public static explicit operator BezierCubic2D( BezierCubic3D curve3D ) => new BezierCubic2D( curve3D.P0, curve3D.P1, curve3D.P2, curve3D.P3 );
+		public static explicit operator BezierCubic2D( BezierCubic3D curve3D ) => new BezierCubic2D( curve3D.P0.ToVector2(), curve3D.P1.ToVector2(), curve3D.P2.ToVector2(), curve3D.P3.ToVector2() );
 		public static explicit operator HermiteCubic3D( BezierCubic3D s ) =>
 			new HermiteCubic3D(
 				s.P0,
@@ -90,10 +91,10 @@ namespace Freya {
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static BezierCubic3D Lerp( BezierCubic3D a, BezierCubic3D b, float t ) =>
 			new(
-				Vector3.LerpUnclamped( a.P0, b.P0, t ),
-				Vector3.LerpUnclamped( a.P1, b.P1, t ),
-				Vector3.LerpUnclamped( a.P2, b.P2, t ),
-				Vector3.LerpUnclamped( a.P3, b.P3, t )
+				CoreUtil.LerpUnclamped( a.P0, b.P0, t ),
+				CoreUtil.LerpUnclamped( a.P1, b.P1, t ),
+				CoreUtil.LerpUnclamped( a.P2, b.P2, t ),
+				CoreUtil.LerpUnclamped( a.P3, b.P3, t )
 			);
 
 		/// <summary>Returns a linear blend between two bézier curves, where the tangent directions are spherically interpolated</summary>
@@ -101,12 +102,12 @@ namespace Freya {
 		/// <param name="b">The second spline segment</param>
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static BezierCubic3D Slerp( BezierCubic3D a, BezierCubic3D b, float t ) {
-			Vector3 P0 = Vector3.LerpUnclamped( a.P0, b.P0, t );
-			Vector3 P3 = Vector3.LerpUnclamped( a.P3, b.P3, t );
+			Vector3 P0 = CoreUtil.LerpUnclamped( a.P0, b.P0, t );
+			Vector3 P3 = CoreUtil.LerpUnclamped( a.P3, b.P3, t );
 			return new BezierCubic3D(
 				P0,
-				P0 + Vector3.SlerpUnclamped( a.P1 - a.P0, b.P1 - b.P0, t ),
-				P3 + Vector3.SlerpUnclamped( a.P2 - a.P3, b.P2 - b.P3, t ),
+				P0 + CoreUtil.SlerpUnclamped( a.P1 - a.P0, b.P1 - b.P0, t ),
+				P3 + CoreUtil.SlerpUnclamped( a.P2 - a.P3, b.P2 - b.P3, t ),
 				P3
 			);
 		}
@@ -114,29 +115,29 @@ namespace Freya {
 		/// <param name="t">The t-value to split at</param>
 		public (BezierCubic3D pre, BezierCubic3D post) Split( float t ) {
 			Vector3 a = new Vector3(
-				P0.x + ( P1.x - P0.x ) * t,
-				P0.y + ( P1.y - P0.y ) * t,
-				P0.z + ( P1.z - P0.z ) * t );
+				P0.X + ( P1.X - P0.X ) * t,
+				P0.Y + ( P1.Y - P0.Y ) * t,
+				P0.Z + ( P1.Z - P0.Z ) * t );
 			Vector3 b = new Vector3(
-				P1.x + ( P2.x - P1.x ) * t,
-				P1.y + ( P2.y - P1.y ) * t,
-				P1.z + ( P2.z - P1.z ) * t );
+				P1.X + ( P2.X - P1.X ) * t,
+				P1.Y + ( P2.Y - P1.Y ) * t,
+				P1.Z + ( P2.Z - P1.Z ) * t );
 			Vector3 c = new Vector3(
-				P2.x + ( P3.x - P2.x ) * t,
-				P2.y + ( P3.y - P2.y ) * t,
-				P2.z + ( P3.z - P2.z ) * t );
+				P2.X + ( P3.X - P2.X ) * t,
+				P2.Y + ( P3.Y - P2.Y ) * t,
+				P2.Z + ( P3.Z - P2.Z ) * t );
 			Vector3 d = new Vector3(
-				a.x + ( b.x - a.x ) * t,
-				a.y + ( b.y - a.y ) * t,
-				a.z + ( b.z - a.z ) * t );
+				a.X + ( b.X - a.X ) * t,
+				a.Y + ( b.Y - a.Y ) * t,
+				a.Z + ( b.Z - a.Z ) * t );
 			Vector3 e = new Vector3(
-				b.x + ( c.x - b.x ) * t,
-				b.y + ( c.y - b.y ) * t,
-				b.z + ( c.z - b.z ) * t );
+				b.X + ( c.X - b.X ) * t,
+				b.Y + ( c.Y - b.Y ) * t,
+				b.Z + ( c.Z - b.Z ) * t );
 			Vector3 p = new Vector3(
-				d.x + ( e.x - d.x ) * t,
-				d.y + ( e.y - d.y ) * t,
-				d.z + ( e.z - d.z ) * t );
+				d.X + ( e.X - d.X ) * t,
+				d.Y + ( e.Y - d.Y ) * t,
+				d.Z + ( e.Z - d.Z ) * t );
 			return ( new BezierCubic3D( P0, a, d, p ), new BezierCubic3D( p, e, c, P3 ) );
 		}
 	}

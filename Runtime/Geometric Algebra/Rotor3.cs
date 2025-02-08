@@ -1,5 +1,7 @@
 using System;
-using UnityEngine;
+
+using Vector3 = Godot.Vector3;
+using Quaternion = Godot.Quaternion;
 
 namespace Freya {
 
@@ -31,14 +33,14 @@ namespace Freya {
 		/// <summary>Creates a rotation representing twice the angle from <c>a</c> to <c>b</c>.
 		/// This is equivalent to multiplying the two vectors a*b.
 		/// Note: Assumes both input vectors are normalized</summary>
-		public static Rotor3 FromToRotationDouble( Vector3 a, Vector3 b ) => new Rotor3( Vector3.Dot( a, b ), Mathfs.Wedge( a, b ) );
+		public static Rotor3 FromToRotationDouble( Vector3 a, Vector3 b ) => new Rotor3( a.Dot( b ), Mathfs.Wedge( a, b ) );
 
 		/// <summary>Creates a rotation from <c>a</c> to <c>b</c>. Note: Assumes both input vectors are normalized</summary>
-		public static Rotor3 FromToRotation( Vector3 a, Vector3 b ) => new Rotor3( Vector3.Dot( a, b ) + 1, Mathfs.Wedge( a, b ) ).Normalized();
+		public static Rotor3 FromToRotation( Vector3 a, Vector3 b ) => new Rotor3( a.Dot( b ) + 1, Mathfs.Wedge( a, b ) ).Normalized();
 
 		/// <summary>Constructs a unit rotor representing a rotation</summary>
 		public Rotor3( float angle, Vector3 axis ) {
-			Bivector3 axisDual = new Bivector3( axis.x, axis.y, axis.z );
+			Bivector3 axisDual = new Bivector3( axis.X, axis.Y, axis.Z );
 			float halfAngle = angle / 2;
 			r = MathF.Cos( halfAngle );
 			b = axisDual * MathF.Sin( halfAngle );
@@ -60,7 +62,7 @@ namespace Freya {
 		/// <param name="v">The vector to multiply (or rotate)</param>
 		public Vector3 Rotate( Vector3 v ) {
 			// hodge variant
-			Bivector3 vHodge = new(v.x, v.y, v.z);
+			Bivector3 vHodge = new(v.X, v.Y, v.Z);
 			return ( this.Conjugate * vHodge * this ).b.HodgeDual;
 			// // todo: does not work - this does R ⭐v R* instead of R* ⭐v R
 			// float r2 = r * r;
@@ -118,26 +120,26 @@ namespace Freya {
 		public static Multivector3 operator *( Rotor3 a, Vector3 b ) {
 			return new Multivector3(
 				0,
-				a.r * b.x - a.zx * b.z + a.xy * b.y,
-				a.r * b.y + a.yz * b.z - a.xy * b.x,
-				a.r * b.z - a.yz * b.y + a.zx * b.x,
+				a.r * b.X - a.zx * b.Z + a.xy * b.Y,
+				a.r * b.Y + a.yz * b.Z - a.xy * b.X,
+				a.r * b.Z - a.yz * b.Y + a.zx * b.X,
 				0,
 				0,
 				0,
-				a.yz * b.x + a.zx * b.y + a.xy * b.z
+				a.yz * b.X + a.zx * b.Y + a.xy * b.Z
 			);
 		}
 
 		public static Multivector3 operator *( Vector3 b, Rotor3 a ) {
 			return new Multivector3(
 				0,
-				a.r * b.x - a.zx * b.z + a.xy * b.y,
-				a.r * b.y + a.yz * b.z - a.xy * b.x,
-				a.r * b.z - a.yz * b.y + a.zx * b.x,
+				a.r * b.X - a.zx * b.Z + a.xy * b.Y,
+				a.r * b.Y + a.yz * b.Z - a.xy * b.X,
+				a.r * b.Z - a.yz * b.Y + a.zx * b.X,
 				0,
 				0,
 				0,
-				a.yz * b.x + a.zx * b.y + a.xy * b.z
+				a.yz * b.X + a.zx * b.Y + a.xy * b.Z
 			);
 		}
 

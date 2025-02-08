@@ -1,5 +1,6 @@
 ﻿using System;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
 
 namespace Freya {
 
@@ -172,7 +173,7 @@ namespace Freya {
 			for( int r = 1; r < degree + 1; r++ ) {
 				for( int j = degree; j > r - 1; j-- ) {
 					float alpha = Mathfs.InverseLerpSafe( knots[j + k - degree], knots[j + 1 + k - r], u );
-					evalBuffer[j] = Vector2.LerpUnclamped( evalBuffer[j - 1], evalBuffer[j], alpha );
+					evalBuffer[j] = CoreUtil.LerpUnclamped( evalBuffer[j - 1], evalBuffer[j], alpha );
 				}
 			}
 
@@ -229,7 +230,7 @@ namespace Freya {
 				return points[i];
 			Vector2 pA = Eval( r - 1, i - 1, u );
 			Vector2 pB = Eval( r - 1, i, u );
-			return Vector2.LerpUnclamped( pA, pB, Alpha( i, i + Order - r, u ) );
+			return CoreUtil.LerpUnclamped( pA, pB, Alpha( i, i + Order - r, u ) );
 		}
 
 		float Alpha( int a, int b, float u ) {

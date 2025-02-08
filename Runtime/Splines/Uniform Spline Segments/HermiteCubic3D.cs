@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -12,7 +13,7 @@ namespace Freya {
 
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-		[SerializeField] Vector3Matrix4x1 pointMatrix;
+		[Export] Vector3Matrix4x1 pointMatrix;
 		[NonSerialized] Polynomial3D curve;
 		[NonSerialized] bool validCoefficients;
 
@@ -62,7 +63,7 @@ namespace Freya {
 
 		/// <summary>Returns this curve flattened to 2D. Effectively setting z = 0</summary>
 		/// <param name="curve3D">The 3D curve to flatten to the Z plane</param>
-		public static explicit operator HermiteCubic2D( HermiteCubic3D curve3D ) => new HermiteCubic2D( curve3D.P0, curve3D.V0, curve3D.P1, curve3D.V1 );
+		public static explicit operator HermiteCubic2D( HermiteCubic3D curve3D ) => new HermiteCubic2D( curve3D.P0.ToVector2(), curve3D.V0.ToVector2(), curve3D.P1.ToVector2(), curve3D.V1.ToVector2() );
 		public static explicit operator BezierCubic3D( HermiteCubic3D s ) =>
 			new BezierCubic3D(
 				s.P0,
@@ -90,10 +91,10 @@ namespace Freya {
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static HermiteCubic3D Lerp( HermiteCubic3D a, HermiteCubic3D b, float t ) =>
 			new(
-				Vector3.LerpUnclamped( a.P0, b.P0, t ),
-				Vector3.LerpUnclamped( a.V0, b.V0, t ),
-				Vector3.LerpUnclamped( a.P1, b.P1, t ),
-				Vector3.LerpUnclamped( a.V1, b.V1, t )
+				CoreUtil.LerpUnclamped( a.P0, b.P0, t ),
+				CoreUtil.LerpUnclamped( a.V0, b.V0, t ),
+				CoreUtil.LerpUnclamped( a.P1, b.P1, t ),
+				CoreUtil.LerpUnclamped( a.V1, b.V1, t )
 			);
 	}
 }

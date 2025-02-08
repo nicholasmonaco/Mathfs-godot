@@ -1,7 +1,8 @@
 // by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
 using System.Collections.Generic;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
 
 namespace Freya {
 
@@ -27,7 +28,7 @@ namespace Freya {
 				return prod;
 			}
 
-			Vector2 sum = Vector2.zero;
+			Vector2 sum = Vector2.Zero;
 			for( int j = 0; j < points.Count; j++ )
 				sum += points[j] * l( j );
 

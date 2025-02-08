@@ -1,6 +1,7 @@
 ﻿// by Freya Holmér (https://github.com/FreyaHolmer/Mathfs)
 
-using UnityEngine;
+using Vector2 = Godot.Vector2;
+
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -43,22 +44,22 @@ namespace Freya {
 		/// <summary>Returns the acceleration, which is the same regardless of time</summary>
 		public Vector2 GetAcceleration() => acceleration;
 
-		public float TimeAtApex => -( velocity.y / acceleration.y );
+		public float TimeAtApex => -( velocity.Y / acceleration.Y );
 		public Vector2 Apex => GetPosition( TimeAtApex );
 
 		/// <summary>Returns the time when this trajectory hits the ground, assuming this trajectory starts at ground level</summary>
 		public float GetLandingTime() => TimeAtApex * 2;
 
 		/// <summary>Returns the landing position of this trajectory, assuming this trajectory starts at ground level</summary>
-		public Vector2 GetLandingPosition() => new Vector2( position.x + GetLandingOffset(), position.y );
+		public Vector2 GetLandingPosition() => new Vector2( position.X + GetLandingOffset(), position.Y );
 
 		/// <summary>Returns the horizontal displacement from the starting position this trajectory lands, assuming this trajectory starts and ends at ground level</summary>
-		public float GetLandingOffset() => ( -2 * velocity.x * velocity.y ) / acceleration.y;
+		public float GetLandingOffset() => ( -2 * velocity.X * velocity.Y ) / acceleration.Y;
 
 		/// <summary>Returns the two time values when passing by a specific height. Note that this may return either 0, 1 or 2 results. The time values may also be negative</summary>
 		/// <param name="height">The height to get time values of</param>
 		public ResultsMax2<float> GetTimesAtHeight( float height ) {
-			float discriminant = velocity.y * velocity.y - 2 * acceleration.y * ( position.y - height );
+			float discriminant = velocity.Y * velocity.Y - 2 * acceleration.Y * ( position.Y - height );
 			if( Approximately( discriminant, 0 ) ) {
 				// 1 solution
 				return new ResultsMax2<float>( TimeAtApex );
@@ -68,10 +69,10 @@ namespace Freya {
 			} else {
 				// 2 solutions
 				float sqrt = Sqrt( discriminant );
-				float mvy = -velocity.y;
+				float mvy = -velocity.Y;
 				return new ResultsMax2<float>(
-					( mvy + sqrt ) / acceleration.y,
-					( mvy - sqrt ) / acceleration.y
+					( mvy + sqrt ) / acceleration.Y,
+					( mvy - sqrt ) / acceleration.Y
 				);
 			}
 		}
@@ -110,8 +111,8 @@ namespace Freya {
 		/// <param name="g">The downwards gravitational constant. Positive values means it's falling down</param>
 		/// <param name="target">The target coordinate this trajectory should attempt to hit</param>
 		public static ResultsMax2<float> GetAnglesToReachCoordinate( Vector2 startPosition, float speed, float g, Vector2 target ) {
-			float x = target.x - startPosition.x;
-			float y = target.y - startPosition.y;
+			float x = target.X - startPosition.X;
+			float y = target.Y - startPosition.Y;
 			float s2 = speed * speed;
 			float s4 = s2 * s2;
 			float discriminant = s4 - g * ( g * x * x + 2 * y * s2 );

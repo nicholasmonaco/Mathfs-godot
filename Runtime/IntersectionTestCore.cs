@@ -2,7 +2,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+
 using static Freya.Mathfs;
 
 namespace Freya {
@@ -44,9 +46,9 @@ namespace Freya {
 		/// <param name="radius">Radius of the circle</param>
 		public static ResultsMax2<float> LinearCircleTValues( Vector2 lineOrigin, Vector2 lineDir, Vector2 circleOrigin, float radius ) {
 			Vector2 circleToLineOrigin = lineOrigin - circleOrigin;
-			float a = Vector2.Dot( lineDir, lineDir ); // ray len sq
-			float b = 2 * Vector2.Dot( circleToLineOrigin, lineDir );
-			float c = Vector2.Dot( circleToLineOrigin, circleToLineOrigin ) - radius.Square();
+			float a = lineDir.Dot( lineDir ); // ray len sq
+			float b = 2 * circleToLineOrigin.Dot( lineDir );
+			float c = circleToLineOrigin.Dot( circleToLineOrigin ) - radius.Square();
 			float discriminant = b * b - 4 * a * c;
 			if( discriminant > 0 ) {
 				discriminant = Sqrt( discriminant );
@@ -98,7 +100,7 @@ namespace Freya {
 		/// <param name="bPos">The position of the second circle</param>
 		/// <param name="bRadius">The radius of the second circle</param>
 		public static bool CirclesOverlap( Vector2 aPos, float aRadius, Vector2 bPos, float bRadius ) {
-			float dist = Vector2.Distance( aPos, bPos );
+			float dist = aPos.DistanceTo( bPos );
 			float maxRad = Max( aRadius, bRadius );
 			float minRad = Min( aRadius, bRadius );
 			return MathF.Abs( dist - maxRad ) < minRad;
@@ -109,7 +111,7 @@ namespace Freya {
 		/// <param name="pt">A point in the line</param>
 		/// <param name="dir">The direction of the line</param>
 		public static bool LineRectOverlap( Vector2 extents, Vector2 pt, Vector2 dir ) {
-			Vector2 corner = new Vector2( extents.x, extents.y * -Sign( dir.x * dir.y ) );
+			Vector2 corner = new Vector2( extents.X, extents.Y * -Sign( dir.X * dir.Y ) );
 			return SignAsInt( Determinant( dir, corner - pt ) ) != SignAsInt( Determinant( dir, -corner - pt ) );
 		}
 
@@ -122,69 +124,69 @@ namespace Freya {
 			const float FLAT_THRESH = 0.000001f;
 
 			// place the line relative to the box
-			pt.x -= center.x;
-			pt.y -= center.y;
+			pt.X -= center.X;
+			pt.Y -= center.Y;
 
 			// Vertical line
-			if( dir.x.Abs() < FLAT_THRESH ) {
-				if( pt.x.Abs() <= extents.x ) // inside - two intersections
+			if( dir.X.Abs() < FLAT_THRESH ) {
+				if( pt.X.Abs() <= extents.X ) // inside - two intersections
 					return new ResultsMax2<Vector2>(
-						new Vector2( center.x + pt.x, center.y - extents.y ),
-						new Vector2( center.x + pt.x, center.y + extents.y ) );
+						new Vector2( center.X + pt.X, center.Y - extents.Y ),
+						new Vector2( center.X + pt.X, center.Y + extents.Y ) );
 				return default; // outside the box
 			}
 
 			// Horizontal line
-			if( dir.y.Abs() < FLAT_THRESH ) {
-				if( pt.y.Abs() <= extents.y ) // inside - two intersections
+			if( dir.Y.Abs() < FLAT_THRESH ) {
+				if( pt.Y.Abs() <= extents.Y ) // inside - two intersections
 					return new ResultsMax2<Vector2>(
-						new Vector2( center.x - extents.x, center.y + pt.y ),
-						new Vector2( center.x + extents.x, center.y + pt.y ) );
+						new Vector2( center.X - extents.X, center.Y + pt.Y ),
+						new Vector2( center.X + extents.X, center.Y + pt.Y ) );
 				return default; // outside the box
 			}
 
 
 			// slope intercept form y = ax+b
-			float a = dir.y / dir.x;
-			float b = pt.y - pt.x * a;
+			float a = dir.Y / dir.X;
+			float b = pt.Y - pt.X * a;
 
 			// y coords on vertical lines
-			float xpy = a * extents.x + b; // x = extents.x
-			float xny = -a * extents.x + b; // x = -extents.x
+			float xpy = a * extents.X + b; // x = extents.x
+			float xny = -a * extents.X + b; // x = -extents.x
 			// x coords on horizontal lines
-			float ypx = ( extents.y - b ) / a; // y = extents.y
-			float ynx = ( -extents.y - b ) / a; // y = -extents.y
+			float ypx = ( extents.Y - b ) / a; // y = extents.y
+			float ynx = ( -extents.Y - b ) / a; // y = -extents.y
 
 			// validity checks
-			bool xp = Abs( xpy ) <= extents.y;
-			bool xn = Abs( xny ) <= extents.y;
-			bool yp = Abs( ypx ) <= extents.x;
-			bool yn = Abs( ynx ) <= extents.x;
+			bool xp = Abs( xpy ) <= extents.Y;
+			bool xn = Abs( xny ) <= extents.Y;
+			bool yp = Abs( ypx ) <= extents.X;
+			bool yn = Abs( ynx ) <= extents.X;
 
 			if( ( xp || xn || yp || yn ) == false )
 				return default; // no intersections
 
 			float ax, ay, bx, by;
 			if( a > 0 ) { // positive slope means we group results in (x,y) and (-x,-y)
-				ax = xp ? extents.x : ypx;
-				ay = xp ? xpy : extents.y;
-				bx = xn ? -extents.x : ynx;
-				by = xn ? xny : -extents.y;
+				ax = xp ? extents.X : ypx;
+				ay = xp ? xpy : extents.Y;
+				bx = xn ? -extents.X : ynx;
+				by = xn ? xny : -extents.Y;
 			} else { // negative slope means we group results in (x,-y) and (-x,y)
-				ax = xp ? extents.x : ynx;
-				ay = xp ? xpy : -extents.y;
-				bx = xn ? -extents.x : ypx;
-				by = xn ? xny : extents.y;
+				ax = xp ? extents.X : ynx;
+				ay = xp ? xpy : -extents.Y;
+				bx = xn ? -extents.X : ypx;
+				by = xn ? xny : extents.Y;
 			}
 
 			// if the points are very close, this means we hit a corner and we should return only one point
 			if( Abs( ax - bx ) + Abs( ay - by ) < 0.000001f )
-				return new ResultsMax2<Vector2>( new Vector2( center.x + ax, center.y + ay ) );
+				return new ResultsMax2<Vector2>( new Vector2( center.X + ax, center.Y + ay ) );
 
 			// else, two points
 			return new ResultsMax2<Vector2>(
-				new Vector2( center.x + ax, center.y + ay ),
-				new Vector2( center.x + bx, center.y + by ) );
+				new Vector2( center.X + ax, center.Y + ay ),
+				new Vector2( center.X + bx, center.Y + by ) );
 		}
 		/// <summary>Returns whether or not two discs overlap. Unlike circles, discs overlap even if one is smaller and is completely inside the other</summary>
 		/// <param name="aPos">The position of the first disc</param>

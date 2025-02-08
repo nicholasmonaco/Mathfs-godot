@@ -2,7 +2,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector2 = Godot.Vector2;
+using ExportAttribute = Godot.ExportAttribute;
 
 namespace Freya {
 
@@ -87,12 +89,12 @@ namespace Freya {
 		#endregion
 
 		// serialized data
-		[SerializeField] Vector2Matrix4x1 pointMatrix;
+		[Export] Vector2Matrix4x1 pointMatrix;
 		public Vector2Matrix4x1 PointMatrix {
 			get => pointMatrix;
 			set => _ = ( pointMatrix = value, validCoefficients = false );
 		}
-		[SerializeField] Matrix4x1 knotVector;
+		[Export] Matrix4x1 knotVector;
 		public Matrix4x1 KnotVector {
 			get {
 				if( knotCalcMode != KnotCalcMode.Manual )
@@ -103,8 +105,8 @@ namespace Freya {
 		}
 
 		// knot auto-calculation fields
-		[SerializeField] KnotCalcMode knotCalcMode; // knot recalculation mode
-		[SerializeField] float alpha; // alpha parameterization
+		[Export] KnotCalcMode knotCalcMode; // knot recalculation mode
+		[Export] float alpha; // alpha parameterization
 
 		Polynomial2D curve;
 		public Polynomial2D Curve {

@@ -2,7 +2,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Vector3 = Godot.Vector3;
 
 namespace Freya {
 
@@ -61,14 +62,14 @@ namespace Freya {
 		/// <summary>The shortest squared distance from this line to a point</summary>
 		/// <param name="linear">The linear object to check distance from (Ray3D, Line3D or LineSegment3D)</param>
 		/// <param name="point">The point to check the distance to</param>
-		[MethodImpl( INLINE )] public static float DistanceSqr<T>( this T linear, Vector3 point ) where T : ILinear3D => ( point - linear.ProjectPoint( point ) ).sqrMagnitude;
+		[MethodImpl( INLINE )] public static float DistanceSqr<T>( this T linear, Vector3 point ) where T : ILinear3D => ( point - linear.ProjectPoint( point ) ).LengthSquared();
 
 		/// <summary>The shortest squared distance from this line to another line</summary>
 		/// <param name="linear">The linear object to check distance from (Ray3D, Line3D or LineSegment3D)</param>
 		/// <param name="other">The other linear object to check the distance to</param>
 		[MethodImpl( INLINE )] public static float DistanceSqr<A, B>( this A linear, B other ) where A : ILinear3D where B : ILinear3D {
 			( float tA, float tB ) = LinearTValues( linear, other );
-			return ( linear.GetPoint( tA ) - other.GetPoint( tB ) ).sqrMagnitude;
+			return ( linear.GetPoint( tA ) - other.GetPoint( tB ) ).LengthSquared();
 		}
 
 	}

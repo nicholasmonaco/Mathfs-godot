@@ -1,4 +1,4 @@
-using UnityEngine;
+using Vector3 = Godot.Vector3;
 
 namespace Freya {
 
@@ -10,16 +10,16 @@ namespace Freya {
 		public Trivector3 t;
 
 		public float x {
-			get => v.x;
-			set => v.x = value;
+			get => v.X;
+			set => v.X = value;
 		}
 		public float y {
-			get => v.y;
-			set => v.y = value;
+			get => v.Y;
+			set => v.Y = value;
 		}
 		public float z {
-			get => v.z;
-			set => v.z = value;
+			get => v.Z;
+			set => v.Z = value;
 		}
 		public float yz {
 			get => b.yz;

@@ -3,7 +3,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+
+using Godot;
 
 namespace Freya {
 
@@ -12,7 +13,7 @@ namespace Freya {
 
 		const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-		[SerializeField] Vector4Matrix4x1 pointMatrix;
+		[Export] Vector4Matrix4x1 pointMatrix;
 		[NonSerialized] Polynomial4D curve;
 		[NonSerialized] bool validCoefficients;
 
@@ -87,10 +88,10 @@ namespace Freya {
 		/// <param name="t">A value from 0 to 1 to blend between <c>a</c> and <c>b</c></param>
 		public static UBSCubic4D Lerp( UBSCubic4D a, UBSCubic4D b, float t ) =>
 			new(
-				Vector4.LerpUnclamped( a.P0, b.P0, t ),
-				Vector4.LerpUnclamped( a.P1, b.P1, t ),
-				Vector4.LerpUnclamped( a.P2, b.P2, t ),
-				Vector4.LerpUnclamped( a.P3, b.P3, t )
+				CoreUtil.LerpUnclamped( a.P0, b.P0, t ),
+				CoreUtil.LerpUnclamped( a.P1, b.P1, t ),
+				CoreUtil.LerpUnclamped( a.P2, b.P2, t ),
+				CoreUtil.LerpUnclamped( a.P3, b.P3, t )
 			);
 	}
 }
