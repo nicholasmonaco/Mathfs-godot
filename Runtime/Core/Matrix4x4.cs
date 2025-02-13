@@ -68,28 +68,28 @@ namespace Freya {
                 // I believe this is known as shepherds method.
                 float tr = mx.X + my.Y + mz.Z;
                 if(tr > 0) {
-                    float S = Sylves.Mathf.Sqrt(tr + 1.0f) * 2; // S=4*qw 
+                    float S = MathF.Sqrt(tr + 1.0f) * 2; // S=4*qw 
                     var qw = 0.25f * S;
                     var qx = (my.Z - mz.Y) / S;
                     var qy = (mz.X - mx.Z) / S;
                     var qz = (mx.Y - my.X) / S;
                     return new Quaternion(qx, qy, qz, qw);
                 } else if((mx.X > my.Y) & (mx.X > mz.Z)) {
-                    float S = Sylves.Mathf.Sqrt(1.0f + mx.X - my.Y - mz.Z) * 2; // S=4*qx 
+                    float S = MathF.Sqrt(1.0f + mx.X - my.Y - mz.Z) * 2; // S=4*qx 
                     var qw = (my.Z - mz.Y) / S;
                     var qx = 0.25f * S;
                     var qy = (my.X + mx.Y) / S;
                     var qz = (mz.X + mx.Z) / S;
                     return new Quaternion(qx, qy, qz, qw);
                 } else if(my.Y > mz.Z) {
-                    float S = Sylves.Mathf.Sqrt(1.0f + my.Y - mx.X - mz.Z) * 2; // S=4*qy
+                    float S = MathF.Sqrt(1.0f + my.Y - mx.X - mz.Z) * 2; // S=4*qy
                     var qw = (mz.X - mx.Z) / S;
                     var qx = (my.X + mx.Y) / S;
                     var qy = 0.25f * S;
                     var qz = (mz.Y + my.Z) / S;
                     return new Quaternion(qx, qy, qz, qw);
                 } else {
-                    float S = Sylves.Mathf.Sqrt(1.0f + mz.Z - mx.X - my.Y) * 2; // S=4*qz
+                    float S = MathF.Sqrt(1.0f + mz.Z - mx.X - my.Y) * 2; // S=4*qz
                     var qw = (mx.Y - my.X) / S;
                     var qx = (mz.X + mx.Z) / S;
                     var qy = (mz.Y + my.Z) / S;
