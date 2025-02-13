@@ -212,5 +212,20 @@ namespace Freya {
         }
 
 
+        // Vector Projection
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 ProjectOnPlane(Vector3 vector, Vector3 planeNormal) {
+            var sqrMag = planeNormal.Dot(planeNormal);
+            if(sqrMag < Mathfs.Epsilon)
+                return vector;
+            else {
+                var dot = vector.Dot(planeNormal);
+                return new Vector3(
+                    vector.X - planeNormal.X * dot / sqrMag,
+                    vector.Y - planeNormal.Y * dot / sqrMag,
+                    vector.Z - planeNormal.Z * dot / sqrMag);
+            }
+        }
+
     }
 }

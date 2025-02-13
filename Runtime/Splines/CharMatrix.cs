@@ -81,7 +81,7 @@ namespace Freya {
 		public static RationalMatrix4x4 GetConversionMatrix( RationalMatrix4x4 from, RationalMatrix4x4 to ) => to.Inverse * from;
 
 		public static Matrix4x4 Create( float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33 ) {
-			Matrix4x4 m;
+			Matrix4x4 m = new Matrix4x4();
 			m.m00 = m00;
 			m.m10 = m10;
 			m.m20 = m20;

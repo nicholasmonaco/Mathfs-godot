@@ -1,397 +1,311 @@
 // Matrix4x4.cs 
-// Originally from Unity's math reference
+// Originally from Sylves math reference
 // Adapted for Godot by Nikeshayde
 
 using Godot;
 using System;
 
-// using System.Runtime.InteropServices;
-// using scm = System.ComponentModel;
-// using System.Globalization;
-// using System.Runtime.CompilerServices;
-
 namespace Freya {
-    public struct Matrix4x4 : IEquatable<Matrix4x4> /*, IFormattable*/ {
-        // memory layout:
-        //
-        //                row no (=vertical)
-        //               |  0   1   2   3
-        //            ---+----------------
-        //            0  | m00 m10 m20 m30
-        // column no  1  | m01 m11 m21 m31
-        // (=horiz)   2  | m02 m12 m22 m32
-        //            3  | m03 m13 m23 m33
+        public struct Matrix4x4 : IEquatable<Matrix4x4> {
+        public float m00 { get { return column0.X; } set { column0.X = value; } }
+        public float m10 { get { return column0.Y; } set { column0.Y = value; } }
+        public float m20 { get { return column0.Z; } set { column0.Z = value; } }
+        public float m30 { get { return column0.W; } set { column0.W = value; } }
+        public float m01 { get { return column1.X; } set { column1.X = value; } }
+        public float m11 { get { return column1.Y; } set { column1.Y = value; } }
+        public float m21 { get { return column1.Z; } set { column1.Z = value; } }
+        public float m31 { get { return column1.W; } set { column1.W = value; } }
+        public float m02 { get { return column2.X; } set { column2.X = value; } }
+        public float m12 { get { return column2.Y; } set { column2.Y = value; } }
+        public float m22 { get { return column2.Z; } set { column2.Z = value; } }
+        public float m32 { get { return column2.W; } set { column2.W = value; } }
+        public float m03 { get { return column3.X; } set { column3.X = value; } }
+        public float m13 { get { return column3.Y; } set { column3.Y = value; } }
+        public float m23 { get { return column3.Z; } set { column3.Z = value; } }
+        public float m33 { get { return column3.W; } set { column3.W = value; } }
 
-        ///*undocumented*
-        public float m00;
-        ///*undocumented*
-        public float m10;
-        ///*undocumented*
-        public float m20;
-        ///*undocumented*
-        public float m30;
-
-        ///*undocumented*
-        public float m01;
-        ///*undocumented*
-        public float m11;
-        ///*undocumented*
-        public float m21;
-        ///*undocumented*
-        public float m31;
-
-        ///*undocumented*
-        public float m02;
-        ///*undocumented*
-        public float m12;
-        ///*undocumented*
-        public float m22;
-        ///*undocumented*
-        public float m32;
-
-        ///*undocumented*
-        public float m03;
-        ///*undocumented*
-        public float m13;
-        ///*undocumented*
-        public float m23;
-        ///*undocumented*
-        public float m33;
+        public Vector4 column0;
+        public Vector4 column1;
+        public Vector4 column2;
+        public Vector4 column3;
 
         public Matrix4x4(Vector4 column0, Vector4 column1, Vector4 column2, Vector4 column3) {
-            this.m00 = column0.X; this.m01 = column1.X; this.m02 = column2.X; this.m03 = column3.X;
-            this.m10 = column0.Y; this.m11 = column1.Y; this.m12 = column2.Y; this.m13 = column3.Y;
-            this.m20 = column0.Z; this.m21 = column1.Z; this.m22 = column2.Z; this.m23 = column3.Z;
-            this.m30 = column0.W; this.m31 = column1.W; this.m32 = column2.W; this.m33 = column3.W;
+            this.column0 = column0;
+            this.column1 = column1;
+            this.column2 = column2;
+            this.column3 = column3;
         }
 
-        // public Matrix4x4(float m00, float m01, float m02, float m03, 
-        //                  float m10, float m11, float m12, float m13, 
-        //                  float m20, float m21, float m22, float m23, 
-        //                  float m30, float m31, float m32, float m33) {
-        //     this.m00 = m00; this.m01 = m01; this.m02 = m02; this.m03 = m03;
-        //     this.m10 = m10; this.m11 = m11; this.m12 = m12; this.m13 = m13;
-        //     this.m20 = m20; this.m21 = m21; this.m22 = m22; this.m23 = m23;
-        //     this.m30 = m30; this.m31 = m31; this.m32 = m32; this.m33 = m33;
-        // }
+        public static implicit operator Basis(Matrix4x4 m) => new Basis(new Vector3(m.m00, m.m10, m.m20), new Vector3(m.m01, m.m11, m.m21), new Vector3(m.m02, m.m12, m.m22));
+        public static implicit operator Matrix4x4(Basis t) => new Matrix4x4(t.Column0.ToVector4(), t.Column1.ToVector4(), t.Column2.ToVector4(), new Vector4(0, 0, 0, 1));
 
-        // Access element at [row, column].
-        public float this[int row, int column] {
-            // [MethodImpl(MethodImplOptionsEx.AggressiveInlining)]
-            get {
-                return this[row + column * 4];
-            }
-
-            // [MethodImpl(MethodImplOptionsEx.AggressiveInlining)]
-            set {
-                this[row + column * 4] = value;
-            }
+        public static implicit operator Transform3D(Matrix4x4 m) => new Transform3D((Basis)m, new Vector3(m.m03, m.m13, m.m23));
+        public static implicit operator Matrix4x4(Transform3D t) {
+            var m = (Matrix4x4)t.Basis;
+            m.column3 = new Vector4(t.Origin.X, t.Origin.Y, t.Origin.Z, 1);
+            return m;
         }
 
-        // Access element at sequential index (0..15 inclusive).
-        public float this[int index] {
+        public static implicit operator Godot.Transform2D(Matrix4x4 m) => new Godot.Transform2D(new Vector2(m.m00, m.m10), new Vector2(m.m01, m.m11), new Vector2(m.m03, m.m13));
+        public static implicit operator Matrix4x4(Godot.Transform2D t) => new Matrix4x4(new Vector4(t.X.X, t.X.Y, 0, 0), new Vector4(t.Y.X, t.Y.Y, 0, 0), new Vector4(0, 0, 1, 0), new Vector4(0, 0, 0, 1));
+
+        //public float this[int index] { get; set; }
+        //public float this[int row, int column] { get; set; }
+
+        public static Matrix4x4 zero => new Matrix4x4(Vector4.Zero, Vector4.Zero, Vector4.Zero, Vector4.Zero);
+        public static Matrix4x4 identity => new Matrix4x4(new Vector4(1, 0, 0, 0), new Vector4(0, 1, 0, 0), new Vector4(0, 0, 1, 0), new Vector4(0, 0, 0, 1));
+        public Matrix4x4 transpose => new Matrix4x4(GetRow(0), GetRow(1), GetRow(2), GetRow(3));
+        public Quaternion rotation {
             get {
-                switch(index) {
-                    case 0: return m00;
-                    case 1: return m10;
-                    case 2: return m20;
-                    case 3: return m30;
-                    case 4: return m01;
-                    case 5: return m11;
-                    case 6: return m21;
-                    case 7: return m31;
-                    case 8: return m02;
-                    case 9: return m12;
-                    case 10: return m22;
-                    case 11: return m32;
-                    case 12: return m03;
-                    case 13: return m13;
-                    case 14: return m23;
-                    case 15: return m33;
-                    default:
-                        throw new IndexOutOfRangeException("Invalid matrix index!");
-                }
-            }
+                // Orthogonalize
+                Vector3 mx = MultiplyVector(Vector3.Right).Normalized();
+                Vector3 my = CoreUtil.ProjectOnPlane(MultiplyVector(Vector3.Up), mx).Normalized();
+                Vector3 mz = CoreUtil.ProjectOnPlane(CoreUtil.ProjectOnPlane(MultiplyVector(Vector3.Back), mx), my).Normalized();
+                var isReflection = mx.Dot(my.Cross(mz)) < 0;
+                if(isReflection) mx *= -1;
 
-            set {
-                switch(index) {
-                    case 0: m00 = value; break;
-                    case 1: m10 = value; break;
-                    case 2: m20 = value; break;
-                    case 3: m30 = value; break;
-                    case 4: m01 = value; break;
-                    case 5: m11 = value; break;
-                    case 6: m21 = value; break;
-                    case 7: m31 = value; break;
-                    case 8: m02 = value; break;
-                    case 9: m12 = value; break;
-                    case 10: m22 = value; break;
-                    case 11: m32 = value; break;
-                    case 12: m03 = value; break;
-                    case 13: m13 = value; break;
-                    case 14: m23 = value; break;
-                    case 15: m33 = value; break;
-
-                    default:
-                        throw new IndexOutOfRangeException("Invalid matrix index!");
+                // https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+                // I believe this is known as shepherds method.
+                float tr = mx.X + my.Y + mz.Z;
+                if(tr > 0) {
+                    float S = Sylves.Mathf.Sqrt(tr + 1.0f) * 2; // S=4*qw 
+                    var qw = 0.25f * S;
+                    var qx = (my.Z - mz.Y) / S;
+                    var qy = (mz.X - mx.Z) / S;
+                    var qz = (mx.Y - my.X) / S;
+                    return new Quaternion(qx, qy, qz, qw);
+                } else if((mx.X > my.Y) & (mx.X > mz.Z)) {
+                    float S = Sylves.Mathf.Sqrt(1.0f + mx.X - my.Y - mz.Z) * 2; // S=4*qx 
+                    var qw = (my.Z - mz.Y) / S;
+                    var qx = 0.25f * S;
+                    var qy = (my.X + mx.Y) / S;
+                    var qz = (mz.X + mx.Z) / S;
+                    return new Quaternion(qx, qy, qz, qw);
+                } else if(my.Y > mz.Z) {
+                    float S = Sylves.Mathf.Sqrt(1.0f + my.Y - mx.X - mz.Z) * 2; // S=4*qy
+                    var qw = (mz.X - mx.Z) / S;
+                    var qx = (my.X + mx.Y) / S;
+                    var qy = 0.25f * S;
+                    var qz = (mz.Y + my.Z) / S;
+                    return new Quaternion(qx, qy, qz, qw);
+                } else {
+                    float S = Sylves.Mathf.Sqrt(1.0f + mz.Z - mx.X - my.Y) * 2; // S=4*qz
+                    var qw = (mx.Y - my.X) / S;
+                    var qx = (mz.X + mx.Z) / S;
+                    var qy = (mz.Y + my.Z) / S;
+                    var qz = 0.25f * S;
+                    return new Quaternion(qx, qy, qz, qw);
                 }
             }
         }
+        public Vector3 lossyScale {
+            get {
+                // Orthogonalize so this matches rotation, above
+                Vector3 mx = MultiplyVector(Vector3.Right);
+                Vector3 my = CoreUtil.ProjectOnPlane(MultiplyVector(Vector3.Up), mx);
+                Vector3 mz = CoreUtil.ProjectOnPlane(CoreUtil.ProjectOnPlane(MultiplyVector(Vector3.Back), mx), my);
+                var isReflection = mx.Dot(my.Cross(mz)) < 0;
+                if(isReflection) {
+                    return new Vector3(-mx.Length(), my.Length(), mz.Length());
+                } else {
+                    return new Vector3(mx.Length(), my.Length(), mz.Length());
+                }
+            }
+        }
+        public bool isIdentity => this == identity;
+        public float determinant {
+            get {
+                // Copied from https://stackoverflow.com/a/44446912/14738198
+                var A2323 = m22 * m33 - m23 * m32;
+                var A1323 = m21 * m33 - m23 * m31;
+                var A1223 = m21 * m32 - m22 * m31;
+                var A0323 = m20 * m33 - m23 * m30;
+                var A0223 = m20 * m32 - m22 * m30;
+                var A0123 = m20 * m31 - m21 * m30;
 
-        // used to allow Matrix4x4s to be used as keys in hash tables
-        // [MethodImpl(MethodImplOptionsEx.AggressiveInlining)]
-        public override int GetHashCode() {
-            return GetColumn(0).GetHashCode() ^ (GetColumn(1).GetHashCode() << 2) ^ (GetColumn(2).GetHashCode() >> 2) ^ (GetColumn(3).GetHashCode() >> 1);
+                var det = m00 * (m11 * A2323 - m12 * A1323 + m13 * A1223)
+                    - m01 * (m10 * A2323 - m12 * A0323 + m13 * A0223)
+                    + m02 * (m10 * A1323 - m11 * A0323 + m13 * A0123)
+                    - m03 * (m10 * A1223 - m11 * A0223 + m12 * A0123);
+
+                return det;
+            }
+        }
+        //public FrustumPlanes decomposeProjection { get; }
+        public Matrix4x4 inverse {
+            get {
+                // Copied from https://stackoverflow.com/a/44446912/14738198
+                var A2323 = m22 * m33 - m23 * m32;
+                var A1323 = m21 * m33 - m23 * m31;
+                var A1223 = m21 * m32 - m22 * m31;
+                var A0323 = m20 * m33 - m23 * m30;
+                var A0223 = m20 * m32 - m22 * m30;
+                var A0123 = m20 * m31 - m21 * m30;
+                var A2313 = m12 * m33 - m13 * m32;
+                var A1313 = m11 * m33 - m13 * m31;
+                var A1213 = m11 * m32 - m12 * m31;
+                var A2312 = m12 * m23 - m13 * m22;
+                var A1312 = m11 * m23 - m13 * m21;
+                var A1212 = m11 * m22 - m12 * m21;
+                var A0313 = m10 * m33 - m13 * m30;
+                var A0213 = m10 * m32 - m12 * m30;
+                var A0312 = m10 * m23 - m13 * m20;
+                var A0212 = m10 * m22 - m12 * m20;
+                var A0113 = m10 * m31 - m11 * m30;
+                var A0112 = m10 * m21 - m11 * m20;
+
+                var det = m00 * (m11 * A2323 - m12 * A1323 + m13 * A1223)
+                    - m01 * (m10 * A2323 - m12 * A0323 + m13 * A0223)
+                    + m02 * (m10 * A1323 - m11 * A0323 + m13 * A0123)
+                    - m03 * (m10 * A1223 - m11 * A0223 + m12 * A0123);
+                det = 1 / det;
+
+                return new Matrix4x4() {
+                    m00 = det * (m11 * A2323 - m12 * A1323 + m13 * A1223),
+                    m01 = det * -(m01 * A2323 - m02 * A1323 + m03 * A1223),
+                    m02 = det * (m01 * A2313 - m02 * A1313 + m03 * A1213),
+                    m03 = det * -(m01 * A2312 - m02 * A1312 + m03 * A1212),
+                    m10 = det * -(m10 * A2323 - m12 * A0323 + m13 * A0223),
+                    m11 = det * (m00 * A2323 - m02 * A0323 + m03 * A0223),
+                    m12 = det * -(m00 * A2313 - m02 * A0313 + m03 * A0213),
+                    m13 = det * (m00 * A2312 - m02 * A0312 + m03 * A0212),
+                    m20 = det * (m10 * A1323 - m11 * A0323 + m13 * A0123),
+                    m21 = det * -(m00 * A1323 - m01 * A0323 + m03 * A0123),
+                    m22 = det * (m00 * A1313 - m01 * A0313 + m03 * A0113),
+                    m23 = det * -(m00 * A1312 - m01 * A0312 + m03 * A0112),
+                    m30 = det * -(m10 * A1223 - m11 * A0223 + m12 * A0123),
+                    m31 = det * (m00 * A1223 - m01 * A0223 + m02 * A0123),
+                    m32 = det * -(m00 * A1213 - m01 * A0213 + m02 * A0113),
+                    m33 = det * (m00 * A1212 - m01 * A0212 + m02 * A0112),
+                };
+            }
         }
 
-        // also required for being able to use Matrix4x4s as keys in hash tables
-        // [MethodImpl(MethodImplOptionsEx.AggressiveInlining)]
+        public static float Determinant(Matrix4x4 m) => m.determinant;
+        //public static Matrix4x4 Frustum(float left, float right, float bottom, float top, float zNear, float zFar);
+        //public static Matrix4x4 Frustum(FrustumPlanes fp);
+        public static Matrix4x4 Inverse(Matrix4x4 m) => m.inverse;
+        //public static bool Inverse3DAffine(Matrix4x4 input, ref Matrix4x4 result);
+        //public static Matrix4x4 LookAt(Vector3 from, Vector3 to, Vector3 up);
+        //public static Matrix4x4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
+        //public static Matrix4x4 Perspective(float fov, float aspect, float zNear, float zFar);
+        public static Matrix4x4 Rotate(Quaternion q) {
+            var qx = q.X;
+            var qy = q.Y;
+            var qz = q.Z;
+            var qw = q.W;
+            return new Matrix4x4() {
+                m00 = 1 - 2 * qy * qy - 2 * qz * qz,
+                m01 = 2 * qx * qy - 2 * qz * qw,
+                m02 = 2 * qx * qz + 2 * qy * qw,
+                m10 = 2 * qx * qy + 2 * qz * qw,
+                m11 = 1 - 2 * qx * qx - 2 * qz * qz,
+                m12 = 2 * qy * qz - 2 * qx * qw,
+                m20 = 2 * qx * qz - 2 * qy * qw,
+                m21 = 2 * qy * qz + 2 * qx * qw,
+                m22 = 1 - 2 * qx * qx - 2 * qy * qy,
+                m33 = 1,
+            };
+        }
+        public static Matrix4x4 Scale(Vector3 vector) => new Matrix4x4(new Vector4(vector.X, 0, 0, 0), new Vector4(0, vector.Y, 0, 0), new Vector4(0, 0, vector.Z, 0), new Vector4(0, 0, 0, 1));
+        public static Matrix4x4 Translate(Vector3 vector) => new Matrix4x4(new Vector4(1, 0, 0, 0), new Vector4(0, 1, 0, 0), new Vector4(0, 0, 1, 0), new Vector4(vector.X, vector.Y, vector.Z, 1));
+        public static Matrix4x4 Transpose(Matrix4x4 m) => m.transpose;
+        public static Matrix4x4 TRS(Vector3 pos, Quaternion q, Vector3 s) => Translate(pos) * Rotate(q) * Scale(s);
         public override bool Equals(object other) {
-            if(!(other is Matrix4x4)) return false;
-
-            return Equals((Matrix4x4)other);
+            if(other is Matrix4x4 m) {
+                return Equals(m);
+            }
+            return false;
         }
+        public bool Equals(Matrix4x4 other) => column0 == other.column0 && column1 == other.column1 && column2 == other.column2 && column3 == other.column3;
 
-        // [MethodImpl(MethodImplOptionsEx.AggressiveInlining)]
-        public bool Equals(Matrix4x4 other) {
-            return GetColumn(0).Equals(other.GetColumn(0))
-                && GetColumn(1).Equals(other.GetColumn(1))
-                && GetColumn(2).Equals(other.GetColumn(2))
-                && GetColumn(3).Equals(other.GetColumn(3));
-        }
-
-        // Multiplies two matrices.
-        public static Matrix4x4 operator *(Matrix4x4 lhs, Matrix4x4 rhs) {
-            Matrix4x4 res;
-            res.m00 = lhs.m00 * rhs.m00 + lhs.m01 * rhs.m10 + lhs.m02 * rhs.m20 + lhs.m03 * rhs.m30;
-            res.m01 = lhs.m00 * rhs.m01 + lhs.m01 * rhs.m11 + lhs.m02 * rhs.m21 + lhs.m03 * rhs.m31;
-            res.m02 = lhs.m00 * rhs.m02 + lhs.m01 * rhs.m12 + lhs.m02 * rhs.m22 + lhs.m03 * rhs.m32;
-            res.m03 = lhs.m00 * rhs.m03 + lhs.m01 * rhs.m13 + lhs.m02 * rhs.m23 + lhs.m03 * rhs.m33;
-
-            res.m10 = lhs.m10 * rhs.m00 + lhs.m11 * rhs.m10 + lhs.m12 * rhs.m20 + lhs.m13 * rhs.m30;
-            res.m11 = lhs.m10 * rhs.m01 + lhs.m11 * rhs.m11 + lhs.m12 * rhs.m21 + lhs.m13 * rhs.m31;
-            res.m12 = lhs.m10 * rhs.m02 + lhs.m11 * rhs.m12 + lhs.m12 * rhs.m22 + lhs.m13 * rhs.m32;
-            res.m13 = lhs.m10 * rhs.m03 + lhs.m11 * rhs.m13 + lhs.m12 * rhs.m23 + lhs.m13 * rhs.m33;
-
-            res.m20 = lhs.m20 * rhs.m00 + lhs.m21 * rhs.m10 + lhs.m22 * rhs.m20 + lhs.m23 * rhs.m30;
-            res.m21 = lhs.m20 * rhs.m01 + lhs.m21 * rhs.m11 + lhs.m22 * rhs.m21 + lhs.m23 * rhs.m31;
-            res.m22 = lhs.m20 * rhs.m02 + lhs.m21 * rhs.m12 + lhs.m22 * rhs.m22 + lhs.m23 * rhs.m32;
-            res.m23 = lhs.m20 * rhs.m03 + lhs.m21 * rhs.m13 + lhs.m22 * rhs.m23 + lhs.m23 * rhs.m33;
-
-            res.m30 = lhs.m30 * rhs.m00 + lhs.m31 * rhs.m10 + lhs.m32 * rhs.m20 + lhs.m33 * rhs.m30;
-            res.m31 = lhs.m30 * rhs.m01 + lhs.m31 * rhs.m11 + lhs.m32 * rhs.m21 + lhs.m33 * rhs.m31;
-            res.m32 = lhs.m30 * rhs.m02 + lhs.m31 * rhs.m12 + lhs.m32 * rhs.m22 + lhs.m33 * rhs.m32;
-            res.m33 = lhs.m30 * rhs.m03 + lhs.m31 * rhs.m13 + lhs.m32 * rhs.m23 + lhs.m33 * rhs.m33;
-
-            return res;
-        }
-
-        // Transforms a [[Vector4]] by a matrix.
-        public static Vector4 operator *(Matrix4x4 lhs, Vector4 vector) {
-            Vector4 res;
-            res.X = lhs.m00 * vector.X + lhs.m01 * vector.Y + lhs.m02 * vector.Z + lhs.m03 * vector.W;
-            res.Y = lhs.m10 * vector.X + lhs.m11 * vector.Y + lhs.m12 * vector.Z + lhs.m13 * vector.W;
-            res.Z = lhs.m20 * vector.X + lhs.m21 * vector.Y + lhs.m22 * vector.Z + lhs.m23 * vector.W;
-            res.W = lhs.m30 * vector.X + lhs.m31 * vector.Y + lhs.m32 * vector.Z + lhs.m33 * vector.W;
-            return res;
-        }
-
-        //*undoc*
-        public static bool operator ==(Matrix4x4 lhs, Matrix4x4 rhs) {
-            // Returns false in the presence of NaN values.
-            return lhs.GetColumn(0) == rhs.GetColumn(0)
-                && lhs.GetColumn(1) == rhs.GetColumn(1)
-                && lhs.GetColumn(2) == rhs.GetColumn(2)
-                && lhs.GetColumn(3) == rhs.GetColumn(3);
-        }
-
-        //*undoc*
-        public static bool operator !=(Matrix4x4 lhs, Matrix4x4 rhs) {
-            // Returns true in the presence of NaN values.
-            return !(lhs == rhs);
-        }
-
-        // Get a column of the matrix.
         public Vector4 GetColumn(int index) {
             switch(index) {
-                case 0: return new Vector4(m00, m10, m20, m30);
-                case 1: return new Vector4(m01, m11, m21, m31);
-                case 2: return new Vector4(m02, m12, m22, m32);
-                case 3: return new Vector4(m03, m13, m23, m33);
-                default:
-                    throw new IndexOutOfRangeException("Invalid column index!");
+                case 0: return column0;
+                case 1: return column1;
+                case 2: return column2;
+                case 3: return column3;
+                default: throw new IndexOutOfRangeException();
             }
         }
 
-        // Returns a row of the matrix.
+        public override int GetHashCode() => (column0, column1, column2, column3).GetHashCode();
         public Vector4 GetRow(int index) {
             switch(index) {
                 case 0: return new Vector4(m00, m01, m02, m03);
                 case 1: return new Vector4(m10, m11, m12, m13);
                 case 2: return new Vector4(m20, m21, m22, m23);
                 case 3: return new Vector4(m30, m31, m32, m33);
-                default:
-                    throw new IndexOutOfRangeException("Invalid row index!");
+                default: throw new IndexOutOfRangeException();
             }
         }
-
-        public Vector3 GetPosition() {
-            return new Vector3(m03, m13, m23);
-        }
-
-        // Sets a column of the matrix.
+        public Vector3 MultiplyPoint(Vector3 point) => MultiplyPoint3x4(point) /
+            (point.X * m30 + point.Y * m31 + point.Z * m32 + m33);
+        public Vector3 MultiplyPoint3x4(Vector3 point) => new Vector3(
+            point.X * m00 + point.Y * m01 + point.Z * m02 + m03,
+            point.X * m10 + point.Y * m11 + point.Z * m12 + m13,
+            point.X * m20 + point.Y * m21 + point.Z * m22 + m23
+            );
+        public Vector3 MultiplyVector(Vector3 vector) => new Vector3(
+            vector.X * m00 + vector.Y * m01 + vector.Z * m02,
+            vector.X * m10 + vector.Y * m11 + vector.Z * m12,
+            vector.X * m20 + vector.Y * m21 + vector.Z * m22
+            );
         public void SetColumn(int index, Vector4 column) {
-            this[0, index] = column.X;
-            this[1, index] = column.Y;
-            this[2, index] = column.Z;
-            this[3, index] = column.W;
+            switch(index) {
+                case 0: column0 = column; return;
+                case 1: column1 = column; return;
+                case 2: column2 = column; return;
+                case 3: column3 = column; return;
+                default: throw new IndexOutOfRangeException();
+            }
         }
-
-        // Sets a row of the matrix.
         public void SetRow(int index, Vector4 row) {
-            this[index, 0] = row.X;
-            this[index, 1] = row.Y;
-            this[index, 2] = row.Z;
-            this[index, 3] = row.W;
+            switch(index) {
+                case 0: (m00, m01, m02, m03) = (row.X, row.Y, row.Z, row.W); return;
+                case 1: (m10, m11, m12, m13) = (row.X, row.Y, row.Z, row.W); return;
+                case 2: (m20, m21, m22, m23) = (row.X, row.Y, row.Z, row.W); return;
+                case 3: (m30, m31, m32, m33) = (row.X, row.Y, row.Z, row.W); return;
+                default: throw new IndexOutOfRangeException();
+            }
         }
-
-        // Transforms a position by this matrix, with a perspective divide. (generic)
-        public Vector3 MultiplyPoint(Vector3 point) {
-            Vector3 res;
-            float w;
-            res.X = this.m00 * point.X + this.m01 * point.Y + this.m02 * point.Z + this.m03;
-            res.Y = this.m10 * point.X + this.m11 * point.Y + this.m12 * point.Z + this.m13;
-            res.Z = this.m20 * point.X + this.m21 * point.Y + this.m22 * point.Z + this.m23;
-            w = this.m30 * point.X + this.m31 * point.Y + this.m32 * point.Z + this.m33;
-
-            w = 1F / w;
-            res.X *= w;
-            res.Y *= w;
-            res.Z *= w;
-            return res;
+        public void SetTRS(Vector3 pos, Quaternion q, Vector3 s) {
+            var m = TRS(pos, q, s);
+            column0 = m.column0;
+            column1 = m.column1;
+            column2 = m.column2;
+            column3 = m.column3;
         }
+        public override string ToString() => $"{m00}\t{m01}\t{m02}\t{m03}\n{m10}\t{m11}\t{m12}\t{m13}\n{m20}\t{m21}\t{m22}\t{m23}\n{m30}\t{m31}\t{m32}\t{m33}";
+        public string ToString(string format) => ToString();
+        //public Plane TransformPlane(Plane plane);
+        //public bool ValidTRS();
 
-        // Transforms a position by this matrix, without a perspective divide. (fast)
-        public Vector3 MultiplyPoint3x4(Vector3 point) {
-            Vector3 res;
-            res.X = this.m00 * point.X + this.m01 * point.Y + this.m02 * point.Z + this.m03;
-            res.Y = this.m10 * point.X + this.m11 * point.Y + this.m12 * point.Z + this.m13;
-            res.Z = this.m20 * point.X + this.m21 * point.Y + this.m22 * point.Z + this.m23;
-            return res;
-        }
-
-        // Transforms a direction by this matrix.
-        public Vector3 MultiplyVector(Vector3 vector) {
-            Vector3 res;
-            res.X = this.m00 * vector.X + this.m01 * vector.Y + this.m02 * vector.Z;
-            res.Y = this.m10 * vector.X + this.m11 * vector.Y + this.m12 * vector.Z;
-            res.Z = this.m20 * vector.X + this.m21 * vector.Y + this.m22 * vector.Z;
-            return res;
-        }
-
-        // Transforms a plane by this matrix.
-        // public Plane TransformPlane(Plane plane) {
-        //     var ittrans = this.inverse; // todo - get inverse/make .Inverse() method
-
-        //     float x = plane.Normal.X, y = plane.Normal.Y, z = plane.Normal.Z, w = plane.D;
-        //     // note: a transpose is part of this transformation
-        //     var a = ittrans.m00 * x + ittrans.m10 * y + ittrans.m20 * z + ittrans.m30 * w;
-        //     var b = ittrans.m01 * x + ittrans.m11 * y + ittrans.m21 * z + ittrans.m31 * w;
-        //     var c = ittrans.m02 * x + ittrans.m12 * y + ittrans.m22 * z + ittrans.m32 * w;
-        //     var d = ittrans.m03 * x + ittrans.m13 * y + ittrans.m23 * z + ittrans.m33 * w;
-
-        //     return new Plane(new Vector3(a, b, c), d);
-        // }
-
-        // Creates a scaling matrix.
-        public static Matrix4x4 Scale(Vector3 vector) {
-            Matrix4x4 m;
-            m.m00 = vector.X; m.m01 = 0F; m.m02 = 0F; m.m03 = 0F;
-            m.m10 = 0F; m.m11 = vector.Y; m.m12 = 0F; m.m13 = 0F;
-            m.m20 = 0F; m.m21 = 0F; m.m22 = vector.Z; m.m23 = 0F;
-            m.m30 = 0F; m.m31 = 0F; m.m32 = 0F; m.m33 = 1F;
-            return m;
-        }
-
-        // Creates a translation matrix.
-        public static Matrix4x4 Translate(Vector3 vector) {
-            Matrix4x4 m;
-            m.m00 = 1F; m.m01 = 0F; m.m02 = 0F; m.m03 = vector.X;
-            m.m10 = 0F; m.m11 = 1F; m.m12 = 0F; m.m13 = vector.Y;
-            m.m20 = 0F; m.m21 = 0F; m.m22 = 1F; m.m23 = vector.Z;
-            m.m30 = 0F; m.m31 = 0F; m.m32 = 0F; m.m33 = 1F;
-            return m;
-        }
-
-        // Creates a rotation matrix. Note: Assumes unit quaternion
-        public static Matrix4x4 Rotate(Quaternion q) {
-            // Precalculate coordinate products
-            float x = q.X * 2.0F;
-            float y = q.Y * 2.0F;
-            float z = q.Z * 2.0F;
-            float xx = q.X * x;
-            float yy = q.Y * y;
-            float zz = q.Z * z;
-            float xy = q.X * y;
-            float xz = q.X * z;
-            float yz = q.Y * z;
-            float wx = q.W * x;
-            float wy = q.W * y;
-            float wz = q.W * z;
-
-            // Calculate 3x3 matrix from orthonormal basis
-            Matrix4x4 m;
-            m.m00 = 1.0f - (yy + zz); m.m10 = xy + wz; m.m20 = xz - wy; m.m30 = 0.0F;
-            m.m01 = xy - wz; m.m11 = 1.0f - (xx + zz); m.m21 = yz + wx; m.m31 = 0.0F;
-            m.m02 = xz + wy; m.m12 = yz - wx; m.m22 = 1.0f - (xx + yy); m.m32 = 0.0F;
-            m.m03 = 0.0F; m.m13 = 0.0F; m.m23 = 0.0F; m.m33 = 1.0F;
-            return m;
-        }
-
-        // Matrix4x4.Zero is of questionable usefulness considering C# sets everything to 0 by default, however:
-        //  1. it's consistent with other Math structs in Unity such as Vector2, Vector3 and Vector4,
-        //  2. "Matrix4x4.Zero" is arguably more readable than "new Matrix4x4()",
-        //  3. it's already in the API ..
-        static readonly Matrix4x4 zeroMatrix = new Matrix4x4(new Vector4(0, 0, 0, 0),
-            new Vector4(0, 0, 0, 0),
-            new Vector4(0, 0, 0, 0),
-            new Vector4(0, 0, 0, 0));
-
-        // Returns a matrix with all elements set to zero (RO).
-        public static Matrix4x4 zero { get { return zeroMatrix; } }
-
-        static readonly Matrix4x4 identityMatrix = new Matrix4x4(new Vector4(1, 0, 0, 0),
-            new Vector4(0, 1, 0, 0),
-            new Vector4(0, 0, 1, 0),
-            new Vector4(0, 0, 0, 1));
-
-        // Returns the identity matrix (RO).
-        public static Matrix4x4 identity { 
-            // [MethodImpl(MethodImplOptionsEx.AggressiveInlining)] 
-            get { return identityMatrix; }
-        }
-
-        // [MethodImpl(MethodImplOptionsEx.AggressiveInlining)]
-        // public override string ToString() {
-        //     return ToString(null, null);
-        // }
-
-        // // [MethodImpl(MethodImplOptionsEx.AggressiveInlining)]
-        // public string ToString(string format) {
-        //     return ToString(format, null);
-        // }
-
-        // [MethodImpl(MethodImplOptionsEx.AggressiveInlining)]
-        // public string ToString(string format, IFormatProvider formatProvider) {
-        //     if(string.IsNullOrEmpty(format))
-        //         format = "F5";
-        //     if(formatProvider == null)
-        //         formatProvider = CultureInfo.InvariantCulture.NumberFormat;
-        //     return String.Format("{0}\t{1}\t{2}\t{3}\n{4}\t{5}\t{6}\t{7}\n{8}\t{9}\t{10}\t{11}\n{12}\t{13}\t{14}\t{15}\n",
-        //         m00.ToString(format, formatProvider), m01.ToString(format, formatProvider), m02.ToString(format, formatProvider), m03.ToString(format, formatProvider),
-        //         m10.ToString(format, formatProvider), m11.ToString(format, formatProvider), m12.ToString(format, formatProvider), m13.ToString(format, formatProvider),
-        //         m20.ToString(format, formatProvider), m21.ToString(format, formatProvider), m22.ToString(format, formatProvider), m23.ToString(format, formatProvider),
-        //         m30.ToString(format, formatProvider), m31.ToString(format, formatProvider), m32.ToString(format, formatProvider), m33.ToString(format, formatProvider));
-        // }
+        public static Vector4 operator *(Matrix4x4 lhs, Vector4 vector) => new Vector4(
+            vector.X * lhs.m00 + vector.Y * lhs.m01 + vector.Z * lhs.m02 + vector.W * lhs.m03,
+            vector.X * lhs.m10 + vector.Y * lhs.m11 + vector.Z * lhs.m12 + vector.W * lhs.m13,
+            vector.X * lhs.m20 + vector.Y * lhs.m21 + vector.Z * lhs.m22 + vector.W * lhs.m23,
+            vector.X * lhs.m30 + vector.Y * lhs.m31 + vector.Z * lhs.m32 + vector.W * lhs.m33
+            );
+        public static Matrix4x4 operator *(Matrix4x4 lhs, Matrix4x4 rhs) => new Matrix4x4 {
+            m00 = lhs.m00 * rhs.m00 + lhs.m01 * rhs.m10 + lhs.m02 * rhs.m20 + lhs.m03 * rhs.m30,
+            m10 = lhs.m10 * rhs.m00 + lhs.m11 * rhs.m10 + lhs.m12 * rhs.m20 + lhs.m13 * rhs.m30,
+            m20 = lhs.m20 * rhs.m00 + lhs.m21 * rhs.m10 + lhs.m22 * rhs.m20 + lhs.m23 * rhs.m30,
+            m30 = lhs.m30 * rhs.m00 + lhs.m31 * rhs.m10 + lhs.m32 * rhs.m20 + lhs.m33 * rhs.m30,
+            m01 = lhs.m00 * rhs.m01 + lhs.m01 * rhs.m11 + lhs.m02 * rhs.m21 + lhs.m03 * rhs.m31,
+            m11 = lhs.m10 * rhs.m01 + lhs.m11 * rhs.m11 + lhs.m12 * rhs.m21 + lhs.m13 * rhs.m31,
+            m21 = lhs.m20 * rhs.m01 + lhs.m21 * rhs.m11 + lhs.m22 * rhs.m21 + lhs.m23 * rhs.m31,
+            m31 = lhs.m30 * rhs.m01 + lhs.m31 * rhs.m11 + lhs.m32 * rhs.m21 + lhs.m33 * rhs.m31,
+            m02 = lhs.m00 * rhs.m02 + lhs.m01 * rhs.m12 + lhs.m02 * rhs.m22 + lhs.m03 * rhs.m32,
+            m12 = lhs.m10 * rhs.m02 + lhs.m11 * rhs.m12 + lhs.m12 * rhs.m22 + lhs.m13 * rhs.m32,
+            m22 = lhs.m20 * rhs.m02 + lhs.m21 * rhs.m12 + lhs.m22 * rhs.m22 + lhs.m23 * rhs.m32,
+            m32 = lhs.m30 * rhs.m02 + lhs.m31 * rhs.m12 + lhs.m32 * rhs.m22 + lhs.m33 * rhs.m32,
+            m03 = lhs.m00 * rhs.m03 + lhs.m01 * rhs.m13 + lhs.m02 * rhs.m23 + lhs.m03 * rhs.m33,
+            m13 = lhs.m10 * rhs.m03 + lhs.m11 * rhs.m13 + lhs.m12 * rhs.m23 + lhs.m13 * rhs.m33,
+            m23 = lhs.m20 * rhs.m03 + lhs.m21 * rhs.m13 + lhs.m22 * rhs.m23 + lhs.m23 * rhs.m33,
+            m33 = lhs.m30 * rhs.m03 + lhs.m31 * rhs.m13 + lhs.m32 * rhs.m23 + lhs.m33 * rhs.m33,
+        };
+        public static bool operator ==(Matrix4x4 lhs, Matrix4x4 rhs) => lhs.Equals(rhs);
+        public static bool operator !=(Matrix4x4 lhs, Matrix4x4 rhs) => !(lhs == rhs);
     }
 }
